@@ -12,4 +12,9 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="5.0.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\AutomatMachine\AutomatMachine.csproj" />
+    <ProjectReference Include="..\MailManagement\MailManagement.csproj" />
+  </ItemGroup>
+
 </Project>

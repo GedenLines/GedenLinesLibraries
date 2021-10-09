@@ -38,14 +38,14 @@ namespace Synchronizer.Shippernetix
         {
             var messageAction = new Func<string, string>(message =>
              {
-                 Console.WriteLine("\n{0}:\n" + DateTime.Now);
+                 Console.WriteLine("\n{0}:\n",DateTime.Now);
 
                  Console.WriteLine(message);
 
                  return message;
              });
 
-            List<string> logMessages = new List<string>() { messageAction("StructureSync is started") };
+            List<string> logMessages = new List<string>() { messageAction("Structure Sync is started") };
 
             var structureGroupsQuery = "select En_CallSign, En_L1, En_L2, En_L3, En_L4 from (select * from Structure where En_CallSign=@CallSign) x group by En_CallSign, En_L1, En_L2, En_L3, En_L4";
 
@@ -118,7 +118,7 @@ namespace Synchronizer.Shippernetix
                             var affectedRowsCount = SqlManager.ExecuteNonQuery(sql:structure.Table.GetInsertQueries,parameters:null,target.Connection);
 
                             if (affectedRowsCount > 0)
-                                logMessages.Add(messageAction(string.Format("{0} Transfered From {0} To {1}", sourceDifference.ShippernetixId, source.Name, target.Name)));
+                                logMessages.Add(messageAction(string.Format("{0} Transfered From {1} To {2}", sourceDifference.ShippernetixId, source.Name, target.Name)));
                             else
                                 logMessages.Add(messageAction(string.Format("An error occured while transfering structure : {0}", sourceDifference.ShippernetixId)));
                         });
@@ -149,7 +149,7 @@ namespace Synchronizer.Shippernetix
                             var affectedRowsCount = SqlManager.ExecuteNonQuery(sql: structure.Table.GetInsertQueries, parameters: null, source.Connection);
 
                             if (affectedRowsCount > 0)
-                                logMessages.Add(messageAction(string.Format("{0} Transfered From {0} To {1}", targetDifference.ShippernetixId, target.Name, source.Name)));
+                                logMessages.Add(messageAction(string.Format("{0} Transfered From {1} To {2}", targetDifference.ShippernetixId, target.Name, source.Name)));
                             else
                                 logMessages.Add(messageAction(string.Format("An error occured while transfering structure : {0}", targetDifference.ShippernetixId)));
                         });

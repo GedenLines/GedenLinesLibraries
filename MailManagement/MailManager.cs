@@ -27,8 +27,8 @@ namespace MailManagement
         {
             SmtpClient = new SmtpClient();
 
-            if (string.IsNullOrWhiteSpace(smtpClientHost) || string.IsNullOrWhiteSpace(smtpClientUser) || string.IsNullOrWhiteSpace(smtpClientPassword))
-                throw new Exception("One of these fields cannot be left blank(smtpClientHost,smtpClientUser,smtpClientPassword)");
+            //if (string.IsNullOrWhiteSpace(smtpClientHost) || string.IsNullOrWhiteSpace(smtpClientUser) || string.IsNullOrWhiteSpace(smtpClientPassword))
+            //    throw new Exception("One of these fields cannot be left blank(smtpClientHost,smtpClientUser,smtpClientPassword)");
 
             SmtpClient.Host = smtpClientHost;
             SmtpClient.Port = smtpClientPort;

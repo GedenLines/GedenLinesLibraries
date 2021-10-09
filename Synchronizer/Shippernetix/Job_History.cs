@@ -49,7 +49,7 @@ namespace Synchronizer.Shippernetix
         {
             var messageAction = new Func<string, string>(message =>
             {
-                Console.WriteLine("\n{0}:\n" + DateTime.Now);
+                Console.WriteLine("\n{0}:\n",DateTime.Now);
 
                 Console.WriteLine(message);
 
@@ -63,7 +63,7 @@ namespace Synchronizer.Shippernetix
             var sourceColumnListDifferentWithTarget = sourceColumnList.Except(targetColumnList).ToList();
             var targetColumnListDifferentWithSource = targetColumnList.Except(sourceColumnList).ToList();
 
-            List<string> logMessages = new List<string>() { messageAction("Job_History is started") };
+            List<string> logMessages = new List<string>() { messageAction("Job_History Sync is started") };
 
             var jobGroupsQuery = "select y.*," +
                 "(select max(jh.Je_JobNo) from Job_History jh where jh.Je_CallSign = y.Je_CallSign " +
@@ -127,19 +127,37 @@ namespace Synchronizer.Shippernetix
                     .Select(e => sourceList.FirstOrDefault(s => s.ShippernetixId == e))
                     .ToList();
 
-            var sourceDifferences2 = sourceList.Where(ss => targetList.Any(tl => tl.ShippernetixId == ss.ShippernetixId && tl.MaxJobNumber != ss.MaxJobNumber))
-                    .ToList();
+            var intermediateSourceRecords = sourceDifferences.Where(sd => (int)sd.Je_JobNo < (int)sd.MaxJobNumber).ToList();
 
+            var lastSourceRecords = sourceDifferences.Where(sd => (int)sd.Je_JobNo == (int)sd.MaxJobNumber).ToList();
+
+            logMessages.Add(messageAction(string.Format("<b>Source different from target with {0}</b>", sourceDifferences.Count())));
+
+            logMessages.Add(messageAction(string.Format("<b>Differences</b> : {0}", string.Join(",", sourceDifferences.Select(sd => sd.ShippernetixId)))));
+
+            logMessages.Add(messageAction(string.Format("<b>Intermediate Source Records</b> : {0}", string.Join(",", intermediateSourceRecords.Select(sd => sd.ShippernetixId)))));
+
+            logMessages.Add(messageAction(string.Format("<b>Last Source Record Differences</b> : {0}", string.Join(",", lastSourceRecords.Select(sd => sd.ShippernetixId)))));
 
             var targetDifferences = targetList.Select(ss => ss.ShippernetixId)
                     .Except(sourceList.Select(ts => ts.ShippernetixId))
                     .Select(e => targetList.FirstOrDefault(s => s.ShippernetixId == e))
                     .ToList();
 
-            var targetDifferences2 = targetList.Where(ss => sourceList.Any(tl => tl.ShippernetixId == ss.ShippernetixId && tl.MaxJobNumber != ss.MaxJobNumber))
-        .ToList();
 
+            var intermediateTargetRecords = targetDifferences.Where(td => (int)td.Je_JobNo < (int)td.MaxJobNumber).ToList();
 
+            var lastTargetRecords = targetDifferences.Where(td => (int)td.Je_JobNo == (int)td.MaxJobNumber).ToList();
+
+            logMessages.Add(messageAction(string.Format("<b>Target different from source with {0}</b>", targetDifferences.Count())));
+
+            logMessages.Add(messageAction(string.Format("<b>Differences</b> : {0}", string.Join(",", targetDifferences.Select(sd => sd.ShippernetixId)))));
+
+            logMessages.Add(messageAction(string.Format("<b>Intermediate Target Records</b> : {0}", string.Join(",", intermediateTargetRecords.Select(sd => sd.ShippernetixId)))));
+
+            logMessages.Add(messageAction(string.Format("<b>Last Target Record Differences</b> : {0}", string.Join(",", lastTargetRecords.Select(sd => sd.ShippernetixId)))));
+
+            Program.SendMail($"Job_Definition/{vessel.Name}({vessel.CallSign})", string.Join("</br></br>", logMessages));
         }
 
     }
