@@ -28,7 +28,8 @@ namespace Synchronizer
                 if (isSourceConnected && istargetConnected)
                 {
                     // Structure.Sync(source, target);
-                    Defect.Sync(source,target,vessel);
+                    //Defect.Sync(source,target,vessel);
+                    Job_History.Sync(source,target,vessel);
                 }
                 else
                     Console.WriteLine("Source({0}) is connected : {1},Target({2}) is Connected : {3}", source.Name, isSourceConnected, target.Name, istargetConnected);
@@ -76,6 +77,10 @@ namespace Synchronizer
                     {
                         "9VLE",
                         config.GetConnectionString("9VLE")
+                    },
+                    {
+                        "9HA4",
+                        config.GetConnectionString("9HA4")
                     }
                 };
             });
