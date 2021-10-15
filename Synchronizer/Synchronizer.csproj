@@ -7,7 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="GedenLines.SqlManagement" Version="1.0.5" />
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="5.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="5.0.0" />
   </ItemGroup>
@@ -15,6 +14,7 @@
   <ItemGroup>
     <ProjectReference Include="..\AutomatMachine\AutomatMachine.csproj" />
     <ProjectReference Include="..\MailManagement\MailManagement.csproj" />
+    <ProjectReference Include="..\SqlManagement\SqlManagement.csproj" />
   </ItemGroup>
 
 </Project>

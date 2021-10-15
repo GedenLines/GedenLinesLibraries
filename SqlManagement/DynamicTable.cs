@@ -49,7 +49,9 @@ namespace SqlManagement
 
             var selectQuery = string.Format("select {0} {1} from {2} {3}", rowCount != null ? string.Format("top ({0})", rowCount.Value) : null, string.Join(",", fields), Name, whereString);
 
-            var rowInfos = SqlManager.ExecuteQuery(selectQuery, parameters,customConnection);
+
+            var rowInfos = SqlManager.ExecuteQuery(selectQuery, parameters, customConnection);
+
 
             foreach (var rowInfo in rowInfos)
             {
@@ -254,8 +256,9 @@ namespace SqlManagement
                         break;
 
                     case "datetime":
+                    case "smalldatetime":
 
-                        value = Row.Table.VesselSide ? string.Format("'{0:yyyy-dd-MM HH:mm:ss}'", Value) : string.Format("'{0:yyyy-MM-dd HH:mm:ss}'", Value);
+                        value = Row.Table.VesselSide ? string.Format("'{0:yyyy-MM-dd HH:mm:ss}'", Value) : string.Format("'{0:yyyy-dd-MM HH:mm:ss}'", Value);
 
                         break;
 

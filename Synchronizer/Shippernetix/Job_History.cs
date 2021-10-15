@@ -9,7 +9,7 @@ namespace Synchronizer.Shippernetix
 {
     public class Job_History : ShippernetixDynamicObject
     {
-        public Job_History(string callSign, string l1, string l2, string l3, string l4, string jobCode, string jobNumber)
+        public Job_History(string callSign, string l1, string l2, string l3, string l4, string jobCode, string jobNumber, List<string> excludedColumnList,CustomConnection customConnection, bool prepareForVesselSide)
         {
             var parameters = new Dictionary<string, object>();
 
@@ -40,16 +40,17 @@ namespace Synchronizer.Shippernetix
             if (!string.IsNullOrEmpty(jobNumber))
                 parameters.Add("Je_JobNo", jobNumber);
 
-            Table = new DynamicTable(tableName: "Job_History", parameters: parameters)
+            Table = new DynamicTable(tableName: "Job_History", excludedColumnList: excludedColumnList,customConnection:customConnection ,parameters: parameters)
                         .SetUniqueColumns("Je_CallSign", "Je_L1", "Je_L2", "Je_L3", "Je_L4", "Je_JobCode", "Je_JobCode", "Je_JobNo")
+                        .PrepareForVesselSide(prepareForVesselSide)
                         .PrepareUpdateAndInsertQueries();
         }
 
-        public static void Sync(Side source, Side target, Vessel_Master vessel)
+        public static void Sync(Side source, Side target, Vessel_Master vessel,bool onlyMail)
         {
             var messageAction = new Func<string, string>(message =>
             {
-                Console.WriteLine("\n{0}:\n",DateTime.Now);
+                Console.WriteLine("\n{0}:\n", DateTime.Now);
 
                 Console.WriteLine(message);
 
@@ -85,6 +86,7 @@ namespace Synchronizer.Shippernetix
                 .Select(d => new
                 {
                     ShippernetixId = string.Format("{0}-{1}-{2}-{3}-{4}-{5}-{6}", d["Je_CallSign"], d["Je_L1"], d["Je_L2"], d["Je_L3"], d["Je_L4"], d["Je_JobCode"], d["Je_JobNo"]),
+                    Je_CallSign = d["Je_CallSign"],
                     Je_L1 = d["Je_L1"],
                     Je_L2 = d["Je_L2"],
                     Je_L3 = d["Je_L3"],
@@ -104,6 +106,7 @@ namespace Synchronizer.Shippernetix
                 .Select(d => new
                 {
                     ShippernetixId = string.Format("{0}-{1}-{2}-{3}-{4}-{5}-{6}", d["Je_CallSign"], d["Je_L1"], d["Je_L2"], d["Je_L3"], d["Je_L4"], d["Je_JobCode"], d["Je_JobNo"]),
+                    Je_CallSign = d["Je_CallSign"],
                     Je_L1 = d["Je_L1"],
                     Je_L2 = d["Je_L2"],
                     Je_L3 = d["Je_L3"],
@@ -139,10 +142,88 @@ namespace Synchronizer.Shippernetix
 
             logMessages.Add(messageAction(string.Format("<b>Last Source Record Differences</b> : {0}", string.Join(",", lastSourceRecords.Select(sd => sd.ShippernetixId)))));
 
+
+            if(!onlyMail)
+            if (intermediateSourceRecords.Any())
+            {
+                foreach (var sourceDifference in intermediateSourceRecords)
+                {
+                    var jobHistory = new Job_History(sourceDifference.Je_CallSign.ToString(),
+                                                        sourceDifference.Je_L1.ToString(),
+                                                        sourceDifference.Je_L2.ToString(),
+                                                        sourceDifference.Je_L3.ToString(),
+                                                        sourceDifference.Je_L4.ToString(),
+                                                        sourceDifference.Je_JobCode.ToString(),
+                                                        sourceDifference.Je_JobNo.ToString(),
+                                                        sourceColumnListDifferentWithTarget,
+                                                        source.Connection,
+                                                        source.PrepareForVesselSide);
+
+                    var affectedRowsCount = SqlManager.ExecuteNonQuery(sql: jobHistory.Table.GetInsertQueries, parameters: null, target.Connection);
+
+                    if (affectedRowsCount > 0)
+                        logMessages.Add(messageAction(string.Format("{0} Transfered From {1} To {2}", sourceDifference.ShippernetixId, source.Name, target.Name)));
+                    else
+                        logMessages.Add(messageAction(string.Format("An error occured while transfering structure : {0}", sourceDifference.ShippernetixId)));
+                }
+            }
+
+            if (!onlyMail)
+            if (lastSourceRecords.Any())
+            {
+                foreach (var sourceDifference in lastSourceRecords)
+                {
+                    var jobHistory = new Job_History(sourceDifference.Je_CallSign.ToString(),
+                                                        sourceDifference.Je_L1.ToString(),
+                                                        sourceDifference.Je_L2.ToString(),
+                                                        sourceDifference.Je_L3.ToString(),
+                                                        sourceDifference.Je_L4.ToString(),
+                                                        sourceDifference.Je_JobCode.ToString(),
+                                                        sourceDifference.Je_JobNo.ToString(),
+                                                        sourceColumnListDifferentWithTarget,
+                                                        source.Connection,
+                                                        source.PrepareForVesselSide);
+
+
+                    var affectedRowsCount = SqlManager.ExecuteNonQuery(sql: jobHistory.Table.GetInsertQueries, parameters: null, target.Connection);
+
+                    if (affectedRowsCount > 0)
+                        logMessages.Add(messageAction(string.Format("{0} Transfered From {1} To {2}", sourceDifference.ShippernetixId, source.Name, target.Name)));
+                    else
+                        logMessages.Add(messageAction(string.Format("An error occured while transfering structure : {0}", sourceDifference.ShippernetixId)));
+
+
+                    var previousJobNumber = Convert.ToInt32(sourceDifference.Je_JobNo) - 1;
+
+                    if (previousJobNumber < 1)
+                        continue;
+
+                    var previousJobHistory = new Job_History(sourceDifference.Je_CallSign.ToString(),
+                                    sourceDifference.Je_L1.ToString(),
+                                    sourceDifference.Je_L2.ToString(),
+                                    sourceDifference.Je_L3.ToString(),
+                                    sourceDifference.Je_L4.ToString(),
+                                    sourceDifference.Je_JobCode.ToString(),
+                                    previousJobNumber.ToString(),
+                                    sourceColumnListDifferentWithTarget,
+                                    source.Connection,
+                                    source.PrepareForVesselSide);
+
+                    var affectedRowsCount2 = SqlManager.ExecuteNonQuery(sql: jobHistory.Table.GetUpdateQueries, parameters: null, target.Connection);
+
+                    if (affectedRowsCount2 > 0)
+                        logMessages.Add(messageAction(string.Format("{0} Updated From {1} To {2}", string.Format("{0}-{1}-{2}-{3}-{4}-{5}-{6}", sourceDifference.Je_CallSign, sourceDifference.Je_L1, sourceDifference.Je_L2, sourceDifference.Je_L3, sourceDifference.Je_L4, sourceDifference.Je_JobCode, sourceDifference.Je_JobNo), source.Name, target.Name)));
+                    else
+                        logMessages.Add(messageAction(string.Format("An error occured while transfering structure : {0}", sourceDifference.ShippernetixId)));
+
+                }
+
+            }
+
             var targetDifferences = targetList.Select(ss => ss.ShippernetixId)
-                    .Except(sourceList.Select(ts => ts.ShippernetixId))
-                    .Select(e => targetList.FirstOrDefault(s => s.ShippernetixId == e))
-                    .ToList();
+                .Except(sourceList.Select(ts => ts.ShippernetixId))
+                .Select(e => targetList.FirstOrDefault(s => s.ShippernetixId == e))
+                .ToList();
 
 
             var intermediateTargetRecords = targetDifferences.Where(td => (int)td.Je_JobNo < (int)td.MaxJobNumber).ToList();
@@ -157,9 +238,112 @@ namespace Synchronizer.Shippernetix
 
             logMessages.Add(messageAction(string.Format("<b>Last Target Record Differences</b> : {0}", string.Join(",", lastTargetRecords.Select(sd => sd.ShippernetixId)))));
 
+            if (!onlyMail)
+            if (intermediateTargetRecords.Any())
+            {
+                foreach (var targetDifference in intermediateTargetRecords)
+                {
+                    try
+                    {
+
+                        var jobHistory = new Job_History(targetDifference.Je_CallSign.ToString(),
+                                                            targetDifference.Je_L1.ToString(),
+                                                            targetDifference.Je_L2.ToString(),
+                                                            targetDifference.Je_L3.ToString(),
+                                                            targetDifference.Je_L4.ToString(),
+                                                            targetDifference.Je_JobCode.ToString(),
+                                                            targetDifference.Je_JobNo.ToString(),
+                                                            targetColumnListDifferentWithSource,
+                                                            target.Connection,
+                                                            target.PrepareForVesselSide);
+
+                        var affectedRowsCount = SqlManager.ExecuteNonQuery(sql: jobHistory.Table.GetInsertQueries, parameters: null, source.Connection);
+
+                        if (affectedRowsCount > 0)
+                            logMessages.Add(messageAction(string.Format("{0} Transfered From {1} To {2}", targetDifference.ShippernetixId, target.Name, source.Name)));
+                        else
+                            logMessages.Add(messageAction(string.Format("An error occured while transfering structure : {0}", targetDifference.ShippernetixId)));
+                    }
+                    catch (Exception ex)
+                    {
+
+                        continue;
+                    }
+
+                }
+            }
+
+            if (!onlyMail)
+            if (lastTargetRecords.Any())
+            {
+                foreach (var targetDifference in lastTargetRecords)
+                {
+                    var jobHistory = new Job_History(targetDifference.Je_CallSign.ToString(),
+                                    targetDifference.Je_L1.ToString(),
+                                    targetDifference.Je_L2.ToString(),
+                                    targetDifference.Je_L3.ToString(),
+                                    targetDifference.Je_L4.ToString(),
+                                    targetDifference.Je_JobCode.ToString(),
+                                    targetDifference.Je_JobNo.ToString(),
+                                    targetColumnListDifferentWithSource,
+                                    target.Connection,
+                                    target.PrepareForVesselSide);
+
+                    var previousJobNumber = Convert.ToInt32(targetDifference.Je_JobNo) - 1;
+
+                    Job_History previousJobHistory = null;
+
+                    if (previousJobNumber > 1)
+                        previousJobHistory = new Job_History(targetDifference.Je_CallSign.ToString(),
+                                    targetDifference.Je_L1.ToString(),
+                                    targetDifference.Je_L2.ToString(),
+                                    targetDifference.Je_L3.ToString(),
+                                    targetDifference.Je_L4.ToString(),
+                                    targetDifference.Je_JobCode.ToString(),
+                                    previousJobNumber.ToString(),
+                                    targetColumnListDifferentWithSource,
+                                    target.Connection,
+                                    target.PrepareForVesselSide);
+
+
+                    var affectedRowsCount = SqlManager.ExecuteNonQuery(sql: jobHistory.Table.GetInsertQueries, parameters: null, source.Connection);
+
+                    if (affectedRowsCount > 0)
+                        logMessages.Add(messageAction(string.Format("{0} Transfered From {1} To {2}", targetDifference.ShippernetixId, target.Name, source.Name)));
+                    else
+                        logMessages.Add(messageAction(string.Format("An error occured while transfering structure : {0}", targetDifference.ShippernetixId)));
+
+
+
+                    if (previousJobNumber < 1)
+                        continue;
+
+
+                    var affectedRowsCount2 = SqlManager.ExecuteNonQuery(sql: previousJobHistory.Table.GetUpdateQueries, parameters: null, source.Connection);
+
+                    if (affectedRowsCount2 > 0)
+                        logMessages.Add(messageAction(string.Format("{0} Updated From {1} To {2}", string.Format("{0}-{1}-{2}-{3}-{4}-{5}-{6}", targetDifference.Je_CallSign, targetDifference.Je_L1, targetDifference.Je_L2, targetDifference.Je_L3, targetDifference.Je_L4, targetDifference.Je_JobCode, targetDifference.Je_JobNo), target.Name, source.Name)));
+                    else
+                        logMessages.Add(messageAction(string.Format("An error occured while transfering structure : {0}", targetDifference.ShippernetixId)));
+                }
+            }
+
             Program.SendMail($"Job_Definition/{vessel.Name}({vessel.CallSign})", string.Join("</br></br>", logMessages));
         }
 
-    }
+        public static void Fix(string callSign, string l1, string l2, string l3, string l4, string jobCode, string jobNumber, CustomConnection sourceConnection,CustomConnection targetConnection,bool prepareForVessel)
+        {
+            var sourceColumnList = SqlManager.SelectColumnNamesForMSSQL("Job_History", sourceConnection).Select(d => d["COLUMN_NAME"].ToString()).ToList();
 
+            var targetColumnList = SqlManager.SelectColumnNamesForMSSQL("Job_History", targetConnection).Select(d => d["COLUMN_NAME"].ToString()).ToList();
+
+            var sourceColumnListDifferentWithTarget = sourceColumnList.Except(targetColumnList).ToList();
+            //var targetColumnListDifferentWithSource = targetColumnList.Except(sourceColumnList).ToList();
+
+            var job_History = new Job_History(callSign,l1,l2,l3,l4,jobCode,jobNumber, sourceColumnListDifferentWithTarget,sourceConnection,prepareForVessel);
+
+            var affectedRowsCount = SqlManager.ExecuteNonQuery(sql: job_History.Table.GetUpdateQueries, parameters: null, targetConnection);
+        }
+
+    }
 }

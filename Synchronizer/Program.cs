@@ -28,42 +28,50 @@ namespace Synchronizer
         {
             Initialize();
 
-            for (int i = 0; i < Vessel_Master.Vessels.Count; i++)
-            {
-                var vessel = Vessel_Master.Vessels[i];
+            //for (int i = 0; i < Vessel_Master.Vessels.Count; i++)
+            //{
+            //    var vessel = Vessel_Master.Vessels[i];
 
-                Automat automat = new Automat(vessel.CallSign,vessel.Name);
+            //    Automat automat = new Automat(vessel.CallSign,vessel.Name);
 
-                automat.AddJob(new Job("Job_History",1000,null,true)
-                    .SetAction(()=> 
-                    {
-                        Console.WriteLine($"{vessel.Name} {vessel.CallSign}");
-                    }));
+            //    automat.AddJob(new Job("Job_History",1000,null,true)
+            //        .SetAction(()=> 
+            //        {
+            //            Console.WriteLine($"{vessel.Name} {vessel.CallSign}");
+            //        }));
 
-            }
+            //}
 
             Service.Start();
-            
 
-            Console.ReadLine();
+
+
+
+            //Shippernetix.Job_History.Fix("9HA4","4","3","3","1","A","2",new MsSqlConnection(connectionString: "9HA4"),new MsSqlConnection(connectionString: "MsSqlConnectionString"), false);
+            //Shippernetix.Job_History.Fix("9HA4", "1", "2", "3", "2", "A", "2", new MsSqlConnection(connectionString: "9HA4"), new MsSqlConnection(connectionString: "MsSqlConnectionString"), false);
+            //Shippernetix.Job_History.Fix("9HA4", "8", "1", "1", "15", "A", "19", new MsSqlConnection(connectionString: "9HA4"), new MsSqlConnection(connectionString: "MsSqlConnectionString"), false);
+
+
+            //Console.ReadLine();
 
             foreach (var vessel in Vessel_Master.Vessels)
             {
-                if (vessel.CallSign != "9PTY")
+                if (vessel.CallSign != "9HM2")
                     continue;
 
-                var source = new Side("Office", "MsSqlConnectionString",false);
-
-                var target = new Side(vessel.Name,vessel.CallSign,false);
+                var source = new Side("Office", "MsSqlConnectionString",true);
 
                 var isSourceConnected = SqlManager.CheckConnection(source.Connection);
+
+                var target = new Side(vessel.Name, vessel.CallSign, false);
+
                 var istargetConnected = SqlManager.CheckConnection(target.Connection);
 
                 if (isSourceConnected && istargetConnected)
                 {
-                    // Structure.Sync(source, target);
+                    // Structure.Sync(source, target,vessel);
                     //Defect.Sync(source,target,vessel);
-                    Job_History.Sync(source,target,vessel);
+                    Job_History.Sync(source,target,vessel,true);
                     //Job_Definition.Sync(source,target,vessel);
                 }
                 else
@@ -116,6 +124,10 @@ namespace Synchronizer
                     {
                         "9HA4",
                         config.GetConnectionString("9HA4")
+                    },
+                    {
+                        "9HM2",
+                        config.GetConnectionString("9HM2")
                     }
                 };
             });

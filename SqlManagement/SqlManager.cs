@@ -64,6 +64,8 @@ namespace SqlManagement
 
                     command = connection.CreateCommand();
 
+                    command.CommandTimeout = 60;
+
                     command.CommandText = sql;
 
                     if (parameters != null)
@@ -96,7 +98,7 @@ namespace SqlManagement
                 catch (Exception ex)
                 {
                     Console.WriteLine(ex.Message);
-                    throw ex;
+                    //throw ex;
                 }
                 finally
                 {
@@ -169,7 +171,7 @@ namespace SqlManagement
 
                     command = connection.CreateCommand();
 
-
+                    command.CommandTimeout = 60;
                     command.CommandText = sql;
 
                     if (parameters != null)
@@ -190,7 +192,7 @@ namespace SqlManagement
                 catch (Exception ex)
                 {
                     Console.WriteLine(ex.Message);
-                    throw ex;
+                    //throw ex;
                 }
             }
 

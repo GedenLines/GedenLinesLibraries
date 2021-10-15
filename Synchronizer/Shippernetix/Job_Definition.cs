@@ -105,7 +105,7 @@ namespace Synchronizer.Shippernetix
 
             logMessages.Add(messageAction(string.Format("Differences : {0}",string.Join("," ,sourceDifferences.Select(sd=>sd.ShippernetixId)))));
 
-            Program.SendMail($"Job_Definition/{vessel.Name}({vessel.CallSign})",string.Join("</br>",logMessages));
+
 
             if (sourceDifferences.Any())
             {
@@ -137,6 +137,11 @@ namespace Synchronizer.Shippernetix
                                                 .ToList();
 
 
+            logMessages.Add(messageAction(string.Format("Target different from source with {0}", targetDifferences.Count())));
+
+            logMessages.Add(messageAction(string.Format("Differences : {0}", string.Join(",", targetDifferences.Select(sd => sd.ShippernetixId)))));
+
+
             if (targetDifferences.Any())
             {
                 foreach (var targetDifference in targetDifferences)
@@ -162,6 +167,9 @@ namespace Synchronizer.Shippernetix
                     task.Start();
                 }
             }
+
+
+            Program.SendMail($"Job_Definition/{vessel.Name}({vessel.CallSign})", string.Join("</br>", logMessages));
 
         }
     }

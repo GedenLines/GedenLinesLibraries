@@ -9,21 +9,21 @@ namespace Synchronizer.Shippernetix
 {
     public class Defect : ShippernetixDynamicObject
     {
-        public Defect(string callSign, string number,List<string> excludedColumnList,bool prepareForVesselSide)
+        public Defect(string callSign, string number, List<string> excludedColumnList, bool prepareForVesselSide)
         {
             var parameters = new Dictionary<string, object>();
-            
+
             parameters.Add("Dai_CallSign", callSign);
 
             parameters.Add("Dai_DamageNo", number);
 
-            Table = new DynamicTable(tableName: "Defects",excludedColumnList: excludedColumnList, parameters: parameters)
+            Table = new DynamicTable(tableName: "Defects", excludedColumnList: excludedColumnList, parameters: parameters)
                         .SetUniqueColumns("Dai_CallSign", "Dai_DamageNo")
                         .PrepareForVesselSide(prepareForVesselSide)
                         .PrepareUpdateAndInsertQueries();
         }
 
-        public static void Sync(Side source, Side target,Vessel_Master vessel)
+        public static void Sync(Side source, Side target, Vessel_Master vessel)
         {
             var messageAction = new Func<string, string>(message =>
             {
@@ -34,7 +34,7 @@ namespace Synchronizer.Shippernetix
                 return message;
             });
 
-            var sourceColumnList = SqlManager.SelectColumnNamesForMSSQL("Defects", source.Connection).Select(d=>d["COLUMN_NAME"].ToString()).ToList();
+            var sourceColumnList = SqlManager.SelectColumnNamesForMSSQL("Defects", source.Connection).Select(d => d["COLUMN_NAME"].ToString()).ToList();
 
             var targetColumnList = SqlManager.SelectColumnNamesForMSSQL("Defects", target.Connection).Select(d => d["COLUMN_NAME"].ToString()).ToList();
 
@@ -89,9 +89,14 @@ namespace Synchronizer.Shippernetix
                                 .Select(e => sourceList.FirstOrDefault(s => s.ShippernetixId == e))
                                 .ToList();
 
+            logMessages.Add(messageAction(string.Format("Source different from target with {0}", sourceDifferences.Count())));
+
+            logMessages.Add(messageAction(string.Format("Differences : {0}", string.Join(",", sourceDifferences.Select(sd => sd.ShippernetixId)))));
+
+
             if (sourceDifferences.Any())
             {
-                logMessages.Add(messageAction(string.Format("Source different from target with {0} : {1}", sourceDifferences.Count(), string.Join(",",sourceDifferences.Select(sd=>sd.ShippernetixId)))));
+                logMessages.Add(messageAction(string.Format("Source different from target with {0} : {1}", sourceDifferences.Count(), string.Join(",", sourceDifferences.Select(sd => sd.ShippernetixId)))));
 
                 foreach (var sourceDifference in sourceDifferences)
                 {
@@ -116,6 +121,12 @@ namespace Synchronizer.Shippernetix
                                  .Select(e => targetList.FirstOrDefault(s => s.ShippernetixId == e))
                                 .ToList();
 
+
+            logMessages.Add(messageAction(string.Format("Target different from source with {0}", targetDifferences.Count())));
+
+            logMessages.Add(messageAction(string.Format("Differences : {0}", string.Join(",", targetDifferences.Select(sd => sd.ShippernetixId)))));
+
+
             if (targetDifferences.Any())
             {
                 logMessages.Add(messageAction(string.Format("Target different from source with {0} : {1}", targetDifferences.Count(), string.Join(",", targetDifferences.Select(td => td.ShippernetixId)))));
@@ -137,6 +148,7 @@ namespace Synchronizer.Shippernetix
                 }
             }
 
-            }
+            Program.SendMail($"Job_Definition/{vessel.Name}({vessel.CallSign})", string.Join("</br></br>", logMessages));
         }
+    }
 }
