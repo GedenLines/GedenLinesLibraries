@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net5.0</TargetFramework>
+    <UserSecretsId>29bf5248-dd1b-40fe-ac30-5209a3cac8aa</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="GedenLines.AutomatMachine" Version="1.0.0" />
+    <PackageReference Include="GedenLines.FileManagement" Version="1.0.0" />
+    <PackageReference Include="GedenLines.SqlManagement" Version="1.0.5" />
+    <PackageReference Include="Microsoft.Exchange.WebServices" Version="2.2.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="5.0.0" />
+    <PackageReference Include="Oracle.ManagedDataAccess.Core" Version="3.21.3" />
+    <PackageReference Include="System.Data.SqlClient" Version="4.8.3" />
+  </ItemGroup>
+
+</Project>

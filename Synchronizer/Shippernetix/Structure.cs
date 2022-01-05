@@ -10,7 +10,7 @@ namespace Synchronizer.Shippernetix
 {
     public class Structure : ShippernetixDynamicObject
     {
-        public Structure(string callSign, string l1, string l2, string l3, string l4, List<string> excludedColumnList, bool prepareForVesselSide)
+        public Structure(string callSign, string l1, string l2, string l3, string l4, List<string> excludedColumnList, CustomConnection customConnection, bool prepareForVesselSide)
         {
             var parameters = new Dictionary<string, object>();
 
@@ -29,13 +29,13 @@ namespace Synchronizer.Shippernetix
             if (!string.IsNullOrEmpty(l4))
                 parameters.Add("En_L4", l4);
 
-            Table = new DynamicTable(tableName: "Structure", excludedColumnList: excludedColumnList, parameters: parameters)
+            Table = new DynamicTable(tableName: "Structure", excludedColumnList: excludedColumnList,customConnection:customConnection ,parameters: parameters)
                 .SetUniqueColumns("En_CallSign", "En_L1", "En_L2", "En_L3", "En_L4")
                 .PrepareForVesselSide(prepareForVesselSide)
                 .PrepareUpdateAndInsertQueries();
         }
 
-        public static void Sync(Side source, Side target, Vessel_Master vessel)
+        public static void Sync(Side source, Side target, Vessel_Master vessel, bool onlyMail)
         {
             var messageAction = new Func<string, string>(message =>
              {
@@ -75,7 +75,7 @@ namespace Synchronizer.Shippernetix
                 })
                 .ToList();
 
-
+            var list1 = sourceStructures.Where(s => s.ShippernetixId == "9HA2-19-1-1-1").ToList();
 
             var targetStructures = SqlManager.ExecuteQuery(structureGroupsQuery,
                                     new Dictionary<string, object>()
@@ -94,6 +94,8 @@ namespace Synchronizer.Shippernetix
                                     })
                                     .ToList();
 
+            var list2 = targetStructures.Where(s => s.ShippernetixId == "9HA2-19-1-1-1").ToList();
+
             logMessages.Add(messageAction(string.Format("Fetched {0} records from {1} and {2} records from {3} For {4}({5})",
                                                                                                     sourceStructures.Count(),
                                                                                                     source.Name,
@@ -101,6 +103,10 @@ namespace Synchronizer.Shippernetix
                                                                                                     target.Name,
                                                                                                     vessel.Name,
                                                                                                     vessel.CallSign)));
+
+
+            if (sourceStructures.Count == 0 || targetStructures.Count == 0)
+                throw new Exception("Could not fetch data...");
 
             var sourceDifferences = sourceStructures.Select(ss => ss.ShippernetixId)
                                                 .Except(targetStructures.Select(ts => ts.ShippernetixId))
@@ -112,7 +118,7 @@ namespace Synchronizer.Shippernetix
             logMessages.Add(messageAction(string.Format("Differences : {0}", string.Join(",", sourceDifferences.Select(sd => sd.ShippernetixId)))));
 
 
-
+            if(!onlyMail)
             if (sourceDifferences.Any())
             {
 
@@ -126,6 +132,7 @@ namespace Synchronizer.Shippernetix
                                                         sourceDifference.En_L3.ToString(),
                                                         sourceDifference.En_L4.ToString(),
                                                         sourceColumnListDifferentWithTarget,
+                                                        source.Connection,
                                                         source.PrepareForVesselSide);
 
                     var affectedRowsCount = SqlManager.ExecuteNonQuery(sql: structure.Table.GetInsertQueries, parameters: null, target.Connection);
@@ -148,7 +155,7 @@ namespace Synchronizer.Shippernetix
 
             logMessages.Add(messageAction(string.Format("Differences : {0}", string.Join(",", targetDifferences.Select(sd => sd.ShippernetixId)))));
 
-
+            if(!onlyMail)
             if (targetDifferences.Any())
             {
                 foreach (var targetDifference in targetDifferences)
@@ -159,6 +166,7 @@ namespace Synchronizer.Shippernetix
                                 targetDifference.En_L3.ToString(),
                                 targetDifference.En_L4.ToString(),
                                 targetColumnListDifferentWithSource,
+                                target.Connection,
                                 target.PrepareForVesselSide);
 
                     var affectedRowsCount = SqlManager.ExecuteNonQuery(sql: structure.Table.GetInsertQueries, parameters: null, source.Connection);

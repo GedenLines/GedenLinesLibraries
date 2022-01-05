@@ -130,6 +130,25 @@ namespace MailManagement
             return ct;
         }
 
+        public Mail AddAttachment(byte[] data, string fileName,string fileExtension, Action<Exception> logAction = null)
+        {
+            try
+            {
+                var attachment = new Attachment(new MemoryStream(data),fileName);
+
+                attachment.ContentDisposition.FileName = $"{fileName}.{fileExtension.Trim('.')}";
+
+                Message.Attachments.Add(attachment);
+            }
+            catch (Exception ex)
+            {
+                logAction?.Invoke(ex);
+            }
+
+            return this;
+        }
+
+
         public Mail AddAttachment(byte[] data, string fileName, FileType contentType,Action<Exception> logAction = null)
         {
             try
@@ -140,8 +159,6 @@ namespace MailManagement
                 attachment.ContentDisposition.FileName = string.Format("{0}.{1}", fileName, ct.MediaType.Split('/').Last());
 
                 Message.Attachments.Add(attachment);
-
-                return this;
             }
             catch (Exception ex)
             {

@@ -14,9 +14,12 @@ namespace SqlManagement
 
         public bool VesselSide { get; set; }
 
+        public string SelectQuery { get; set; }
+
         public List<string> ExcludedColumnList;
 
         public List<DynamicRow> Rows = new List<DynamicRow>();
+
 
         public DynamicTable(string tableName,List<string> fields = null,List<string> excludedColumnList = null,int? rowCount = null ,CustomConnection customConnection = null,Dictionary<string,object> parameters = null)
         {
@@ -26,7 +29,9 @@ namespace SqlManagement
 
             ExcludedColumnList = excludedColumnList ?? new List<string>();
 
-            var columnInfos = SqlManager.SelectColumnNamesForMSSQL(tableName, customConnection);
+            var columnInfos = new List<Dictionary<string,object>>();
+
+            columnInfos = SqlManager.SelectColumnNamesForMSSQL(tableName, customConnection);
 
             var columns = new List<DynamicColumn>();
 
@@ -44,14 +49,14 @@ namespace SqlManagement
 
             string whereString = null;
 
-            if (parameters != null || parameters.Any())
+            if (parameters != null && parameters.Any())
                 whereString = string.Format("where {0}", string.Join(" and ", parameters.Select(p => string.Format("{0}='{1}'", p.Key, p.Value))));
 
-            var selectQuery = string.Format("select {0} {1} from {2} {3}", rowCount != null ? string.Format("top ({0})", rowCount.Value) : null, string.Join(",", fields), Name, whereString);
+            SelectQuery = string.Format("select {0} {1} from {2} {3}", rowCount != null ? string.Format("top ({0})", rowCount.Value) : null, string.Join(",", fields), Name, whereString);
 
+            var rowInfos = new List<Dictionary<string, object>>();
 
-            var rowInfos = SqlManager.ExecuteQuery(selectQuery, parameters, customConnection);
-
+            rowInfos = SqlManager.ExecuteQuery(SelectQuery, parameters, customConnection);
 
             foreach (var rowInfo in rowInfos)
             {
@@ -77,7 +82,11 @@ namespace SqlManagement
         public DynamicTable SetUniqueColumns(params string[] columnNames)
         {
             if (!Rows.Any())
-                throw new Exception("There is no row defined in table");
+            {
+                Console.WriteLine("There is no row defined in table");
+
+                return this;
+            }
 
             foreach (var row in Rows)
             {
@@ -110,7 +119,11 @@ namespace SqlManagement
         public DynamicTable PrepareUpdateQueries()
         {
             if (!IsUniqueColumnsSet)
-                throw new Exception("At least one column must be set as unique for this table");
+            {
+                Console.WriteLine("At least one column must be set as unique for this table");
+
+                return this;
+            }
 
             foreach (var row in Rows)
             {
@@ -181,7 +194,11 @@ namespace SqlManagement
         public DynamicRow PrepareUpdateQuery()
         {
             if (!Columns.Any(c => c.IsUnique))
-                throw new Exception("There is no unique column defined in this row");
+            {
+                Console.WriteLine("There is no unique column defined in this row");
+
+                return this;
+            }
 
             var query = "";
 
@@ -198,16 +215,18 @@ namespace SqlManagement
 
         public DynamicRow PrepareInsertQuery()
         {
-            //if (!Columns.Any(c => c.IsUnique))
-            //    throw new Exception("There is no unique column defined in this row");
+            if (!Columns.Any(c => c.IsUnique))
+            {
+                Console.WriteLine("There is no unique column defined in this row");
+
+                return this;
+            }
 
             var query = "";
 
             var valuesString = string.Join(",", Columns.Select(c => c.GetValueForDB));
 
             query += string.Format("insert into {0} ({1}) values ({2})", Table.Name, string.Join(",", Columns.Select(c => c.Name)), valuesString);
-
-            //Columns.ForEach(c => Console.WriteLine(string.Format("\nName : {0},Type : {1},Value : {2},GetValue : {3}\n", c.Name, c.DataType, c.Value, c.GetValueForDB)));
 
             InsertQuery = query;
 
@@ -234,12 +253,10 @@ namespace SqlManagement
         {
             get
             {
-                var value = "";
-
                 if (Value == null)
                     return "null";
 
-                
+                string value;
 
                 switch (DataType)
                 {
@@ -262,9 +279,9 @@ namespace SqlManagement
 
                         break;
 
-                    default :
+                    default:
 
-                        value = string.Format("'{0}'", Value.ToString().Replace("'","''"));
+                        value = string.Format("'{0}'", Value.ToString().Replace("'", "''"));
 
                         break;
                 }

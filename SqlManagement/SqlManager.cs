@@ -51,6 +51,9 @@ namespace SqlManagement
         {
             var list = new List<Dictionary<string, object>>();
 
+            if (string.IsNullOrEmpty(sql))
+                return list;
+
             IDataReader dataReader = null;
             IDbCommand command = null;
 
@@ -70,15 +73,7 @@ namespace SqlManagement
 
                     if (parameters != null)
                     {
-                        var pKeys = parameters.Select(p => p.Key).ToList();
-
-                        foreach (var key in pKeys)
-                        {
-                            if (!sql.Contains(key))
-                                parameters.Remove(key);
-                        }
-
-                        command.AddParameters(parameters);
+                        command.AddParameters(parameters.Where(p => sql.Contains(p.Key)).ToDictionary(p => p.Key, p => p.Value));
                     }
 
                     dataReader = command.ExecuteReader();
@@ -104,6 +99,8 @@ namespace SqlManagement
                 {
                     if (dataReader != null)
                         dataReader.Close();
+
+                    connection.Disconnect();
                 }
             }
 
@@ -114,6 +111,10 @@ namespace SqlManagement
         public static object ExecuteScalar(string sql, Dictionary<string, object> parameters = null, CustomConnection connection = null)
         {
             object result = null;
+
+
+            if (string.IsNullOrEmpty(sql))
+                return result;
 
             connection = connection ?? new MsSqlConnection();
 
@@ -131,15 +132,7 @@ namespace SqlManagement
 
                     if (parameters != null)
                     {
-                        var pKeys = parameters.Select(p => p.Key).ToList();
-
-                        foreach (var key in pKeys)
-                        {
-                            if (!sql.Contains(key))
-                                parameters.Remove(key);
-                        }
-
-                        command.AddParameters(parameters);
+                        command.AddParameters(parameters.Where(p => sql.Contains(p.Key)).ToDictionary(p => p.Key, p => p.Value));
                     }
 
                     result = command.ExecuteScalar();
@@ -147,16 +140,19 @@ namespace SqlManagement
                 catch (Exception ex)
                 {
                     Console.WriteLine(ex.Message);
-                    throw ex;
                 }
             }
 
             return result;
         }
 
-        public static int ExecuteNonQuery(string sql, Dictionary<string, object> parameters = null, CustomConnection connection = null)
+        public static int ExecuteNonQuery(string sql, Dictionary<string, object> parameters = null, CustomConnection connection = null,bool isStoreProcedure=false)
         {
             int affectedRowsCount = 0;
+
+
+            if (string.IsNullOrEmpty(sql))
+                return affectedRowsCount;
 
             connection = connection ?? new MsSqlConnection();
 
@@ -174,17 +170,17 @@ namespace SqlManagement
                     command.CommandTimeout = 60;
                     command.CommandText = sql;
 
+                    if (isStoreProcedure)
+                    {
+                        command.CommandType = CommandType.StoredProcedure;
+                    }
+
                     if (parameters != null)
                     {
-                        var pKeys = parameters.Select(p => p.Key).ToList();
-
-                        foreach (var key in pKeys)
-                        {
-                            if (!sql.Contains(key))
-                                parameters.Remove(key);
-                        }
-
-                        command.AddParameters(parameters);
+                        if (command.CommandType == CommandType.StoredProcedure)
+                            command.AddParameters(parameters);
+                        else
+                            command.AddParameters(parameters.Where(p => sql.Contains(p.Key)).ToDictionary(p => p.Key, p => p.Value));
                     }
 
                     affectedRowsCount = command.ExecuteNonQuery();
@@ -200,11 +196,30 @@ namespace SqlManagement
             return affectedRowsCount;
         }
 
+
         public static bool Any(string sql, Dictionary<string, object> parameters = null, CustomConnection connection = null)
         {
+
+            if (string.IsNullOrEmpty(sql))
+                return false;
+
             sql = string.Format("select 1 from ({0}) t", sql);
 
             return Convert.ToInt32(ExecuteScalar(sql, parameters, connection)) == 1;
+        }
+
+        public static void EnableTrigger(string triggerName,string onTableName,CustomConnection connection=null)
+        {
+            var query = $"ENABLE TRIGGER {triggerName} ON {onTableName}";
+
+            ExecuteScalar(sql: query, parameters: null, connection: connection);
+        }
+
+        public static void DisableTrigger(string triggerName, string onTableName,CustomConnection connection= null)
+        {
+            var query = $"DISABLE TRIGGER {triggerName} ON {onTableName}";
+
+            ExecuteScalar(sql: query, parameters: null, connection: connection);
         }
     }
 

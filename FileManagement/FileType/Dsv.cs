@@ -20,12 +20,12 @@ namespace FileManagement.FileType
         }
 
         public Dsv(string path, char separator = ',')
-            : base(path)
+            : base(path, true)
         {
             SetSeparator(separator);
         }
 
-        public List<string> Split(int columnCount, bool withHeader = true)
+        public List<string> Split(bool withHeader = true)
         {
             //var list = new List<string>();
 

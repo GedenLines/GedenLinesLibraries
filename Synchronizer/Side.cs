@@ -29,6 +29,12 @@ namespace Synchronizer
             PrepareForVesselSide = prepareForVesselSide;
         }
 
+        public Side Reconnect()
+        {
+            Connection = new MsSqlConnection(connectionString: ConnectionString);
+
+            return this;
+        }
         
     }
 }

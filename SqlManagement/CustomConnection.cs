@@ -54,7 +54,7 @@ namespace SqlManagement
 
             Connection.ConnectionString = ConnectingString;
 
-            Connection.Open();
+            Connect();
         }
 
         public static void Start(Func<Dictionary<string,string>> connectionStringsProvider)
@@ -96,9 +96,18 @@ namespace SqlManagement
 
         public IDbConnection Connect()
         {
-            if (Connection.State != ConnectionState.Open)
+            try
             {
-                Connection.Open();
+                if (Connection.State != ConnectionState.Open)
+                {
+                    Connection.Open();
+                }
+            }
+            catch (Exception ex)
+            {
+
+                Console.WriteLine(ex.Message);
+                //throw ex;
             }
 
             return this;
@@ -106,7 +115,14 @@ namespace SqlManagement
 
         public IDbConnection Disconnect()
         {
-            Connection.Close();
+            try
+            {
+                Connection.Close();
+            }
+            catch (Exception ex)
+            {
+                //throw ex;
+            }
 
             return this;
         }

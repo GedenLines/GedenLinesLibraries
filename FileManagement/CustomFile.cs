@@ -437,6 +437,11 @@ namespace FileManagement
             return System.IO.File.Exists(path);
         }
 
+        public static bool DirectoryExists(string path)
+        {
+            return Directory.Exists(path);
+        }
+
         public static string GetFilePathFromCurrentProjectBin(string fileName)
         {
             return CombinePaths(CurrentProjectBinPath, fileName);
@@ -445,6 +450,11 @@ namespace FileManagement
         public static string GetFilePathFromCurrentUserDesktop(string fileName)
         {
             return CombinePaths(CurrentUserDesktopPath, fileName);
+        }
+
+        public static string[] GetDirectoriesFromPath(string path)
+        {
+            return Directory.GetDirectories(path).Select(dp=>Path.GetFileName(dp)).ToArray();
         }
 
         public static bool HasInvalidPathChar(string path)

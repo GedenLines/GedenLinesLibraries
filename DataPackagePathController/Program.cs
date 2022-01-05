@@ -1,0 +1,296 @@
+﻿using Microsoft.Exchange.WebServices.Data;
+using Microsoft.Extensions.Configuration;
+using SqlManagement;
+using System;
+using System.Collections.Generic;
+using AutomatMachine;
+using FileManagement;
+using System.Linq;
+using System.IO;
+using System.Net.Mail;
+using MailManagement;
+using System.Threading;
+
+namespace DataPackagePathController
+{
+    class Program
+    {
+        public static string ReceivedDataFilePath { get; set; }
+
+        public static string SendDataFilePath { get; set; }
+
+        public static bool AllowDeleteMail { get; set; }
+
+        public static int IntervalToReceiveDataAsMinute { get; set; } = 1;
+
+        public static int IntervalToSendDataAsMinute { get; set; } = 1;
+
+        static void Main(string[] args)
+        {
+            try
+            {
+                Initialize();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+
+                Console.ReadLine();
+            }
+
+            Automat automat = new Automat("DataPackagePathController Automat", "Receiving or Sending Data Packages Using Exchange");
+
+            var receivingDataJob = new Job("Receive Data")
+                .SetInterval(minutes:IntervalToReceiveDataAsMinute)
+                .SetContinuous(true)
+                .SetAction(()=> 
+                {
+
+                    if (!SqlManager.CheckConnection(new MsSqlConnection(connectionString: "MsSqlConnectionString")))
+                        Console.WriteLine("There is a database connection problem,please check config file");
+                    else
+                    {
+                        try
+                        {
+                            ReceivedData();
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine(ex);
+                        }
+
+                        foreach (var job in Job.Jobs)
+                        {
+                            Console.WriteLine($"'{job.Name}' is gonna work at {job.NextWorkDate}(it worked last time {job.LastWorkDate})");
+                        }
+                    }
+                });
+
+            var sendingDataJob = new Job("Send Data")
+                .SetInterval(minutes: IntervalToSendDataAsMinute)
+                .SetContinuous(true)
+                .SetAction(()=>
+                {
+                    if (!SqlManager.CheckConnection(new MsSqlConnection(connectionString: "MsSqlConnectionString")))
+                        Console.WriteLine("There is a database connection problem,please check config file");
+                    else
+                    {
+                        try
+                        {
+                            SendData();
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine(ex);
+                        }
+                    }
+
+                    foreach (var job in Job.Jobs)
+                    {
+                        Console.WriteLine($"{job.Name} is gonna work at {job.NextWorkDate}(it worked last time {job.LastWorkDate})");
+                    }
+                });
+
+            automat.AddJob(receivingDataJob);
+            automat.AddJob(sendingDataJob);
+
+            Service.Start();
+
+            Console.WriteLine("Press any key to exit...");
+            Console.ReadLine();
+        }
+
+        public static void ReceivedData()
+        {
+            Console.WriteLine("Receiving Data");
+
+            var dictionary = ExchangeServerManager.Connect();
+
+            if (dictionary.Count == 0)
+                Console.WriteLine("No mail found to process");
+
+            foreach (var item in dictionary)
+            {
+                var from = (item.Key as EmailMessage).From;
+
+                var mailObject = new
+                {
+                    FromAddress = from.Address,
+                    FromName = from.Name,
+                    FileName = item.Value.Name,
+                    FileData = item.Value.Content
+                };
+
+                var callSign = Vessel.FetchAll().Where(v => v.Email.ToLower() == from.Address.ToLower()).FirstOrDefault()?.CallSign;
+
+                if (callSign == null)
+                    continue;
+
+                var file = new CustomFile(mailObject.FileName).SetData(mailObject.FileData);
+
+                string cDiskPath = ReceivedDataFilePath ; //Path.GetPathRoot(Environment.SystemDirectory);
+                 
+                var path = CustomFile.CombinePaths(cDiskPath, callSign);
+
+                CustomFile.CreateDirectoryIfNotExists(path);
+
+                var pathToWrite = CustomFile.CombinePaths(path, mailObject.FileName);
+
+                bool isWrittenToFile = false;
+
+                try
+                {
+                    isWrittenToFile = file.WriteAllBytes(pathToWrite, file.Data);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex);
+                    throw;
+                }
+                
+
+                if (isWrittenToFile)
+                {
+                    Console.WriteLine($"The file with name{mailObject.FileName} has been created at {pathToWrite}");
+
+                    if (isWrittenToFile && AllowDeleteMail)
+                    {
+                        if (ExchangeServerManager.DeleteMails(new List<ItemId>() { item.Key?.Id }))
+                            Console.WriteLine("The mail with Id : {0} and Subject : {1} has been deleted", item.Key?.Id, item.Key?.Subject);
+                        else
+                            Console.WriteLine("An error occured while deleting the mail with Id : {0} and Subject : {1}", item.Key?.Id, item.Key?.Subject);
+                    }
+                }
+                else
+                {
+                    Console.WriteLine($"There is an error while writing to file({mailObject.FileName}) at {pathToWrite}");
+                }
+            }
+        }
+
+        public static void SendData()
+        {
+            Console.WriteLine("Sending Data");
+
+            string cDiskPath = SendDataFilePath;
+
+            var directories = CustomFile.GetDirectoriesFromPath(cDiskPath);
+
+            var callSignList = Vessel.FetchAll().Select(v => v.CallSign);
+
+            foreach (var directory in directories)
+            {
+                if (!callSignList.Any(cs => cs == directory))
+                    continue;
+
+                var vessel = Vessel.FetchAll().FirstOrDefault(v => v.CallSign == directory);
+
+                var newPathToRead = CustomFile.CombinePaths(cDiskPath, directory);
+
+                //if (vessel.CallSign != "9HNK")
+                //    continue;
+
+                if (!CustomFile.DirectoryExists(newPathToRead))
+                    continue;
+
+                var arc = SqlManager.ExecuteNonQuery(sql: $"Sp_SelectCache", parameters: new Dictionary<string, object>()
+                {
+                    {"FromOwnerCode",1 },
+                    {"ToOwnerCode", vessel.CallSign}
+                },
+                    connection: new MsSqlConnection(connectionString: "MsSqlConnectionString"),
+                isStoreProcedure: true);
+
+                Console.WriteLine("Waiting 2 seconds...");
+                Thread.Sleep(2000);
+
+                var maxDataPackage = SqlManager.ExecuteScalar("select max(cast(Ds_PacketNo as int)) from Data_Send where Ds_ReceiveOwnerCode=@CallSign", new Dictionary<string, object>()
+                    {
+                        {"CallSign",vessel.CallSign }
+                    }, new MsSqlConnection(connectionString: "MsSqlConnectionString"));
+
+                Console.WriteLine($"Data package with number({maxDataPackage}) has been created");
+
+                var attachmentsPathList = CustomFile.DirectoryGetFiles(newPathToRead);
+
+                foreach (var attachmentPath in attachmentsPathList)
+                {
+                    Console.WriteLine($"Attachment Path is found : {attachmentPath}");
+
+                    var attachmentFile = new CustomFile(path: attachmentPath, createNewIfNotExists: false);
+
+                    var isSentSuccessfully = false;
+
+                    isSentSuccessfully = new MailManager(o => o.Code == "GedenErp")
+                            .Prepare(new Mail(from: new MailAddress("shippernetix@gedenlines.com"), to: null, subject: $"Shippernetix Data File", body: $"Shippernetix Data File.")
+                                        .AddTo(new MailAddress(vessel.Email))
+                                        .AddCC(new MailAddress("shippernetix@gedenlines.com"))
+                                        .AddAttachment(attachmentFile.Data, attachmentFile.Name, attachmentFile.Extension))
+                            .Send((ex) =>
+                            {
+                                Console.WriteLine(ex.Message);
+                            });
+
+                    Console.WriteLine($"The mail was sent successfully : {isSentSuccessfully} , for the file named {attachmentFile.Name} in {newPathToRead}");
+
+                    if (isSentSuccessfully)
+                    {
+                        var toPath = CustomFile.CombinePaths(newPathToRead, CustomFile.CombinePaths("Backup1"));
+
+                        var destinationPath = CustomFile.CombinePaths(toPath, attachmentFile.NameWithExtension);
+
+                        if (CustomFile.CreateDirectoryIfNotExists(toPath))
+                        {
+                            try
+                            {
+                                System.IO.File.Move(attachmentPath, destinationPath);
+
+                                Console.WriteLine($"The file at {attachmentPath} has been moved to {destinationPath}");
+                            }
+                            catch (Exception ex)
+                            {
+                                Console.WriteLine(ex);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        public static void Initialize()
+        {
+            var config = new ConfigurationBuilder()
+                         .AddUserSecrets(typeof(ExchangeServerManager).Assembly)
+                         .Build();
+
+            var exchangeSettingsSection = config.GetSection("ExchangeSettings");
+
+            var username = exchangeSettingsSection.GetSection("UserName").Value;
+            var passsword = exchangeSettingsSection.GetSection("Password").Value;
+            var domain = exchangeSettingsSection.GetSection("Domain").Value;
+            var serviceUrl = exchangeSettingsSection.GetSection("ServiceUrl").Value;
+
+            ExchangeServerManager.WebCredentials = new WebCredentials(username, passsword, domain);
+            ExchangeServerManager.ServiceUrl = serviceUrl;
+
+            ReceivedDataFilePath = config.GetSection("ReceivedDataFilePath").Value;
+            SendDataFilePath = config.GetSection("SendDataFilePath").Value;
+            AllowDeleteMail = config.GetSection("AllowDeleteMail").Value == "1";
+            IntervalToReceiveDataAsMinute = Convert.ToInt32(config.GetSection("IntervalToReceiveDataAsMinute").Value);
+            IntervalToSendDataAsMinute = Convert.ToInt32(config.GetSection("IntervalToSendDataAsMinute").Value);
+
+            CustomConnection.Start(() =>
+            {
+                return new Dictionary<string, string>()
+                {
+                    {
+                        "MsSqlConnectionString",
+                        config.GetSection("MsSqlConnectionString").Value
+                    }
+                };
+            });
+
+            new MailManager("mail.gedenlines.com", 25, "shippernetix@gedenlines.com", "", "GedenErp", false);
+        }
+    }
+}

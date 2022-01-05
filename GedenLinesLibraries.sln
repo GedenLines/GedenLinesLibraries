@@ -15,7 +15,15 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MailManagement", "MailManag
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MailManagement_4.8", "MailManagement_4.8\MailManagement_4.8.csproj", "{9F5F442F-51AF-49F7-A37D-0CF14F8FD464}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestProject", "TestProject\TestProject.csproj", "{63A28321-EB64-43F5-817A-1C7CBAD54B28}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestProject", "TestProject\TestProject.csproj", "{63A28321-EB64-43F5-817A-1C7CBAD54B28}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConsoleApp1", "ConsoleApp1\ConsoleApp1.csproj", "{9F63CD85-FCAB-4B31-84F5-9C1202E5C010}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CsvReaderToMigrate", "CsvReaderToMigrate\CsvReaderToMigrate.csproj", "{B9AD6D88-C580-4F03-8D24-6123C5565A4E}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ExchangeMailToFile", "ExchangeMailToFile\ExchangeMailToFile.csproj", "{822BB62B-E4FD-415F-92FF-1EA0B15F33CC}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataPackagePathController", "DataPackagePathController\DataPackagePathController.csproj", "{65CCC714-4029-4156-884A-381BA720F8D0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -51,6 +59,22 @@ Global
 		{63A28321-EB64-43F5-817A-1C7CBAD54B28}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{63A28321-EB64-43F5-817A-1C7CBAD54B28}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{63A28321-EB64-43F5-817A-1C7CBAD54B28}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9F63CD85-FCAB-4B31-84F5-9C1202E5C010}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9F63CD85-FCAB-4B31-84F5-9C1202E5C010}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9F63CD85-FCAB-4B31-84F5-9C1202E5C010}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9F63CD85-FCAB-4B31-84F5-9C1202E5C010}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B9AD6D88-C580-4F03-8D24-6123C5565A4E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B9AD6D88-C580-4F03-8D24-6123C5565A4E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B9AD6D88-C580-4F03-8D24-6123C5565A4E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B9AD6D88-C580-4F03-8D24-6123C5565A4E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{822BB62B-E4FD-415F-92FF-1EA0B15F33CC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{822BB62B-E4FD-415F-92FF-1EA0B15F33CC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{822BB62B-E4FD-415F-92FF-1EA0B15F33CC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{822BB62B-E4FD-415F-92FF-1EA0B15F33CC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{65CCC714-4029-4156-884A-381BA720F8D0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{65CCC714-4029-4156-884A-381BA720F8D0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{65CCC714-4029-4156-884A-381BA720F8D0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{65CCC714-4029-4156-884A-381BA720F8D0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
