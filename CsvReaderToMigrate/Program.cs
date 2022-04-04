@@ -3,6 +3,7 @@ using SqlManagement;
 using FileManagement;
 using System.Collections.Generic;
 using FileManagement.FileType;
+using System.Linq;
 
 namespace CsvReaderToMigrate
 {
@@ -29,67 +30,111 @@ namespace CsvReaderToMigrate
                 throw new Exception("Db Connection Problem Occured");
 
 
+
+            //var structures = GetStructuresByVessel("9HM2", "16", "ALL", "ALL","ALL", connection);
+            //CloneStructureTo(structures, "9ANT", connection,true);
+
+            //structures = GetStructuresByVessel("9VRT", "5", "3", "2", "ALL", connection);
+            //CloneStructureTo(structures, "9ANT", connection,true);
+
+            //structures = GetStructuresByVessel("9HA4", "2", "1", "ALL", null, connection);
+            //CloneStructureTo(structures, "9ANT", connection, true);
+            //structures = GetStructuresByVessel("9HA4", "2", "2", "ALL", null, connection);
+            //CloneStructureTo(structures, "9ANT", connection, true);
+            //structures = GetStructuresByVessel("9HA4", "2", "3", "ALL", null, connection);
+            //CloneStructureTo(structures, "9ANT", connection, true);
+            //structures = GetStructuresByVessel("9HA4", "2", "4", "ALL", null, connection);
+            //CloneStructureTo(structures, "9ANT", connection, true);
+            //structures = GetStructuresByVessel("9HA4", "2", "5", "ALL", null, connection);
+            //CloneStructureTo(structures, "9ANT", connection, true);
+
             try
             {
-                foreach (var toCallSign in new string[] { "9PRD", "9PRT", "9HA2", "9HLN", "9HN2", "9HNK", "9VLE","9VRT","9HA4","9BUD" })
+
+                CloneStructureTo(structures: new List<Structure>()
                 {
+                    new Structure("9HM2","14","6","1","6")
+                },
+                ToCallSign: "9RYL",
+                connection: connection,
+                cloneJobDefinitions: true);
 
-                    //CloneStructureTo("9PRK", toCallSign, connection, new Dictionary<string, object>()
-                    //{
-                    //    { "En_CallSign", "9PRK" },
-                    //    { "En_L1",6},
-                    //    { "En_L2",0},
-                    //    { "En_L3",0},
-                    //    { "En_L4",0}
-                    //});
+                CloneStructureTo(structures: new List<Structure>()
+                {
+                    new Structure("9HM2","14","6","1","6")
+                },
+                ToCallSign: "9BRV",
+                connection: connection,
+                cloneJobDefinitions: true);
 
-                    //CloneStructureTo("9PRK", toCallSign, connection, new Dictionary<string, object>()
-                    //{
-                    //    { "En_CallSign", "9PRK" },
-                    //    { "En_L1",6},
-                    //    { "En_L2",6},
-                    //    { "En_L3",0},
-                    //    { "En_L4",0}
-                    //});
+                CloneStructureTo(structures: new List<Structure>()
+                {
+                    new Structure("9HM2","14","6","1","6")
+                },
+                ToCallSign: "9HNK",
+                connection: connection,
+                cloneJobDefinitions: true);
 
-                    //CloneStructureTo("9PRK", toCallSign, connection, new Dictionary<string, object>()
-                    //{
-                    //    { "En_CallSign", "9PRK" },
-                    //    { "En_L1",6},
-                    //    { "En_L2",6},
-                    //    { "En_L3",1},
-                    //    { "En_L4",0}
-                    //});
 
-                    //CloneStructureTo("9PRK", toCallSign, connection,new Dictionary<string, object>() 
-                    //{
-                    //    { "En_CallSign", "9PRK" },
-                    //    { "En_L1",6},
-                    //    { "En_L2",6},
-                    //    { "En_L3",1},
-                    //    { "En_L4",1}
-                    //});
+                //foreach (var toCallSign in new string[] { "9PRD", "9PRT", "9HA2", "9HLN", "9HN2", "9HNK", "9VLE","9VRT","9HA4","9BUD" })
+                //{
 
-                    CloneJobDefinitionTo("9PRK",toCallSign,connection,new Dictionary<string, object>()
-                    {
-                        {"Jd_CallSign", "9PRK"},
-                        {"Jd_L1",6 },
-                        {"Jd_L2", 6},
-                        {"Jd_L3", 1},
-                        {"Jd_L4", 1},
-                        {"Jd_JobCode", "A"}
-                    });
+                //    //CloneStructureTo("9PRK", toCallSign, connection, new Dictionary<string, object>()
+                //    //{
+                //    //    { "En_CallSign", "9PRK" },
+                //    //    { "En_L1",6},
+                //    //    { "En_L2",0},
+                //    //    { "En_L3",0},
+                //    //    { "En_L4",0}
+                //    //});
 
-                    CloneJobDefinitionTo("9PRK", toCallSign, connection, new Dictionary<string, object>()
-                    {
-                        {"Jd_CallSign", "9PRK"},
-                        {"Jd_L1",6 },
-                        {"Jd_L2", 6},
-                        {"Jd_L3", 1},
-                        {"Jd_L4", 1},
-                        {"Jd_JobCode", "B"}
-                    });
-                }
+                //    //CloneStructureTo("9PRK", toCallSign, connection, new Dictionary<string, object>()
+                //    //{
+                //    //    { "En_CallSign", "9PRK" },
+                //    //    { "En_L1",6},
+                //    //    { "En_L2",6},
+                //    //    { "En_L3",0},
+                //    //    { "En_L4",0}
+                //    //});
+
+                //    //CloneStructureTo("9PRK", toCallSign, connection, new Dictionary<string, object>()
+                //    //{
+                //    //    { "En_CallSign", "9PRK" },
+                //    //    { "En_L1",6},
+                //    //    { "En_L2",6},
+                //    //    { "En_L3",1},
+                //    //    { "En_L4",0}
+                //    //});
+
+                //    //CloneStructureTo("9PRK", toCallSign, connection,new Dictionary<string, object>() 
+                //    //{
+                //    //    { "En_CallSign", "9PRK" },
+                //    //    { "En_L1",6},
+                //    //    { "En_L2",6},
+                //    //    { "En_L3",1},
+                //    //    { "En_L4",1}
+                //    //});
+
+                //    CloneJobDefinitionTo("9PRK",toCallSign,connection,new Dictionary<string, object>()
+                //    {
+                //        {"Jd_CallSign", "9PRK"},
+                //        {"Jd_L1",6 },
+                //        {"Jd_L2", 6},
+                //        {"Jd_L3", 1},
+                //        {"Jd_L4", 1},
+                //        {"Jd_JobCode", "A"}
+                //    });
+
+                //    CloneJobDefinitionTo("9PRK", toCallSign, connection, new Dictionary<string, object>()
+                //    {
+                //        {"Jd_CallSign", "9PRK"},
+                //        {"Jd_L1",6 },
+                //        {"Jd_L2", 6},
+                //        {"Jd_L3", 1},
+                //        {"Jd_L4", 1},
+                //        {"Jd_JobCode", "B"}
+                //    });
+                //}
 
 
                 var newVesselCallSign = "9ANT";
@@ -308,6 +353,216 @@ namespace CsvReaderToMigrate
                 throw ex;
             }
         }
+
+
+        public static List<Structure> GetStructuresByVessel(string callSign, string l1, string l2, string l3, string l4, CustomConnection connection)
+        {
+            var action = new Func<string,bool>((str) =>
+            {
+                return str?.ToLower() == "all";
+            });
+
+            var IsNotNull = new Func<string,bool>((str)=> 
+            {
+                if(string.IsNullOrEmpty(str))
+                    throw new Exception();
+
+                return true;
+            });
+
+            if (string.IsNullOrEmpty(l1))
+                throw new Exception("Please enter L1");
+
+            var getL1All = action(l1);
+            var getL2All = action(l2);
+            var getL3All = action(l3);
+            var getL4All = action(l4);
+
+
+            var query = "select En_CallSign,En_L1,En_L2,En_L3,En_L4 from Structure where En_CallSign=@CallSign";
+
+            var parameters = new Dictionary<string, object>();
+
+            parameters.Add("CallSign", callSign);
+
+
+            if (getL2All)
+            {
+                query = $"{query} and En_L1=@L1";
+
+                parameters.Add("L1",l1);
+            }
+            else if (getL3All)
+            {
+                query = $"{query} and En_L1=@L1 and En_L2=@L2";
+
+                parameters.Add("L1", l1);
+
+                parameters.Add("L2", l2);
+            }
+            else if(getL4All)
+            {
+                query = $"{query} and En_L1=@L1 and En_L2=@L2 and En_L3=@L3";
+
+                parameters.Add("L1", l1);
+
+                parameters.Add("L2", l2);
+
+                parameters.Add("L3", l3);
+            }
+            else
+            {
+                if (!getL1All)
+                {
+                    query = $"{query} and En_L1=@L1 and En_L2=@L2 and En_L3=@L3 and En_L4=@L4";
+
+                    if (IsNotNull(l1) && IsNotNull(l2) && IsNotNull(l3) && IsNotNull(l4))
+                    {
+                        parameters.Add("L1", l1);
+
+                        parameters.Add("L2", l2);
+
+                        parameters.Add("L3", l3);
+
+                        parameters.Add("L4", l4);
+                    }
+                }
+            }
+
+            var structures = SqlManager.ExecuteQuery(query,parameters,connection)
+                .Select(r=> new Structure() 
+                {
+                    En_CallSign = r["En_CallSign"].ToString(),
+                    En_L1 = r["En_L1"].ToString(),
+                    En_L2 = r["En_L2"].ToString(),
+                    En_L3 = r["En_L3"].ToString(),
+                    En_L4 = r["En_L4"].ToString()
+                }).ToList();
+
+            if (!structures.Any(s => IsNotNull(s.En_L1) && s.En_L2 == "0" && s.En_L3 == "0" && s.En_L4 == "0"))
+                structures.Add(new Structure()
+                {
+                    En_CallSign = callSign,
+                    En_L1 = l1,
+                    En_L2 = "0",
+                    En_L3 = "0",
+                    En_L4 = "0"
+                });
+
+            return structures;
+        }
+
+        public static List<JobDefinition> GetStructureJobDefinitions(Structure structure,CustomConnection connection)
+        {
+            var parameters = new Dictionary<string, object>();
+
+            parameters.Add("CallSign", structure.En_CallSign);
+            parameters.Add("L1", structure.En_L1);
+            parameters.Add("L2", structure.En_L2);
+            parameters.Add("L3", structure.En_L3);
+            parameters.Add("L4", structure.En_L4);
+
+            var results = SqlManager.ExecuteQuery("select * from Job_Definition where Jd_CallSign=@CallSign and Jd_L1=@L1 and Jd_L2=@L2 and Jd_L3=@L3 and Jd_L4=@L4", parameters, connection)
+                .Select(r=>new JobDefinition() 
+                {
+                    Jd_CallSign = r["Jd_CallSign"].ToString(),
+                    Jd_L1 = r["Jd_L1"].ToString(),
+                    Jd_L2 = r["Jd_L2"].ToString(),
+                    Jd_L3 = r["Jd_L3"].ToString(),
+                    Jd_L4 = r["Jd_L4"].ToString(),
+                    Jd_JobCode = r["Jd_JobCode"].ToString()
+                }).ToList();
+
+            return results;
+        }
+
+        public static void CloneStructureTo(List<Structure> structures, string ToCallSign, CustomConnection connection,bool cloneJobDefinitions = false)
+        {
+            foreach (var structure in structures)
+            {
+                var parameters = new Dictionary<string, object>();
+
+                parameters.Add("En_CallSign", structure.En_CallSign);
+                parameters.Add("En_L1", structure.En_L1);
+                parameters.Add("En_L2", structure.En_L2);
+                parameters.Add("En_L3", structure.En_L3);
+                parameters.Add("En_L4", structure.En_L4);
+
+                CloneStructureTo(structure.En_CallSign, ToCallSign, connection, parameters);
+
+                if (cloneJobDefinitions)
+                {
+                    var jds = GetStructureJobDefinitions(structure,connection);
+
+                    foreach (var jd in jds)
+                    {
+                        parameters.Clear();
+
+                        parameters.Add("Jd_CallSign", jd.Jd_CallSign);
+                        parameters.Add("Jd_L1", jd.Jd_L1);
+                        parameters.Add("Jd_L2", jd.Jd_L2);
+                        parameters.Add("Jd_L3", jd.Jd_L3);
+                        parameters.Add("Jd_L4", jd.Jd_L4);
+                        parameters.Add("Jd_JobCode", jd.Jd_JobCode);
+
+                        CloneJobDefinitionTo(jd.Jd_CallSign,ToCallSign,connection,parameters);
+                    }
+                }
+            }
+        }
+
+
+        public static void CloneStructureTo(string fromCallSign, string ToCallSign,string l1,string l2,string l3,string l4, CustomConnection connection)
+        {
+            var parameters = new Dictionary<string, object>();
+
+            parameters.Add("En_CallSign", fromCallSign);
+
+            if (!string.IsNullOrEmpty(l1))
+            {
+                parameters.Add("En_L1", l1);
+
+                if (!string.IsNullOrEmpty(l2))
+                {
+                    parameters.Add("En_L2", l2);
+
+                    if (!string.IsNullOrEmpty(l3))
+                    {
+                        parameters.Add("En_L3", l3);
+
+                        if(!string.IsNullOrEmpty(l4))
+                        {
+                            parameters.Add("En_L4", l4);
+                        }
+                        else
+                        {
+                            parameters.Add("En_L4", 0);
+                        }
+                    }
+                    else
+                    {
+                        parameters.Add("En_L3", 0);
+
+                        parameters.Add("En_L4", 0);
+                    }
+                }
+                else
+                {
+                    parameters.Add("En_L2", 0);
+
+                    parameters.Add("En_L3", 0);
+
+                    parameters.Add("En_L4", 0);
+                }
+            }
+            else
+            {
+                throw new Exception("Please enter L1");
+            }
+
+            CloneStructureTo(fromCallSign,ToCallSign,connection,parameters);
+        }
+
 
         public static void CloneStructureTo(string fromCallSign,string ToCallSign,CustomConnection connection,Dictionary<string,object> parameters)
         {

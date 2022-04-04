@@ -25,6 +25,8 @@ namespace DataPackagePathController
 
         public static int IntervalToSendDataAsMinute { get; set; } = 1;
 
+        public static int IntervalToCheckRequestsAsSeconds { get; set; }
+
         static void Main(string[] args)
         {
             try
@@ -37,6 +39,16 @@ namespace DataPackagePathController
 
                 Console.ReadLine();
             }
+
+            //new MailManager(o => o.Code == "GedenErp")
+            //                .Prepare(new Mail(from: new MailAddress("shippernetix@gedenlines.com"), to: null, subject: $"Shippernetix Data File", body: $"Shippernetix Data File.")
+            //                            .AddTo(new MailAddress("karar@gedenlines.com"))
+            //                            .AddCC(new MailAddress("shippernetix@gedenlines.com")))
+            //                .Send((ex) =>
+            //                {
+            //                    Console.WriteLine(ex.Message);
+            //                });
+
 
             Automat automat = new Automat("DataPackagePathController Automat", "Receiving or Sending Data Packages Using Exchange");
 
@@ -88,6 +100,41 @@ namespace DataPackagePathController
                     foreach (var job in Job.Jobs)
                     {
                         Console.WriteLine($"{job.Name} is gonna work at {job.NextWorkDate}(it worked last time {job.LastWorkDate})");
+                    }
+                });
+
+            var requestObserver = new Job("Request Observer")
+                .SetInterval(seconds: IntervalToCheckRequestsAsSeconds)
+                .SetContinuous(true)
+                .SetAction(()=> 
+                {
+                    if (!SqlManager.CheckConnection(new MsSqlConnection(connectionString: "MsSqlConnectionString")))
+                        Console.WriteLine("There is a database connection problem,please check config file");
+                    else
+                    {
+                        try
+                        {
+                            var requests = DataPackageRequest.SelectRequests();
+
+                            foreach (var request in requests)
+                            {
+                                if (!request.IsDone)
+                                {
+                                    switch (request.ProcessName)
+                                    {
+                                        case "Send":
+
+                                            SendData(request);
+
+                                            break;
+                                    }
+                                }
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine(ex);
+                        }
                     }
                 });
 
@@ -168,7 +215,7 @@ namespace DataPackagePathController
             }
         }
 
-        public static void SendData()
+        public static void SendData(DataPackageRequest request=null)
         {
             Console.WriteLine("Sending Data");
 
@@ -187,8 +234,8 @@ namespace DataPackagePathController
 
                 var newPathToRead = CustomFile.CombinePaths(cDiskPath, directory);
 
-                //if (vessel.CallSign != "9HNK")
-                //    continue;
+                if (request != null && vessel.CallSign != request.CallSign)
+                    continue;
 
                 if (!CustomFile.DirectoryExists(newPathToRead))
                     continue;
@@ -252,6 +299,22 @@ namespace DataPackagePathController
                                 Console.WriteLine(ex);
                             }
                         }
+
+                        if (request!=null)
+                        {
+                            if(DataPackageRequest.CompletePackageRequest(vessel,request.Id, Convert.ToInt32(maxDataPackage)))
+                            {
+                                new MailManager(o => o.Code == "GedenErp")
+                                        .Prepare(new Mail(from: new MailAddress("shippernetix@gedenlines.com"), to: null, subject: $"Request : Shippernetix Data Package('{vessel.Name}','{maxDataPackage}')",
+                                        body: $"The data package(<b>{maxDataPackage}</b>) has been created at request of '<b>{request.RequesterMail}</b>' for '<b>{vessel.Name}</b>'(<b>{vessel.CallSign}</b>).")
+                                                    .AddTo(new MailAddress(request.RequesterMail))
+                                                    .AddCC(new MailAddress("bt@gedenlines.com")))
+                                        .Send((ex) =>
+                                        {
+                                            Console.WriteLine(ex.Message);
+                                        });
+                            }
+                        }
                     }
                 }
             }
@@ -278,6 +341,7 @@ namespace DataPackagePathController
             AllowDeleteMail = config.GetSection("AllowDeleteMail").Value == "1";
             IntervalToReceiveDataAsMinute = Convert.ToInt32(config.GetSection("IntervalToReceiveDataAsMinute").Value);
             IntervalToSendDataAsMinute = Convert.ToInt32(config.GetSection("IntervalToSendDataAsMinute").Value);
+            IntervalToCheckRequestsAsSeconds = Convert.ToInt32(config.GetSection("IntervalToCheckRequestsAsSeconds").Value);
 
             CustomConnection.Start(() =>
             {

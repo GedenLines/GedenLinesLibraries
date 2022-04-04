@@ -82,13 +82,43 @@ namespace Synchronizer
             //}
             ////Evrim Bey İstek End
 
+
             //ExecuteNonQueryOn(new MsSqlConnection(connectionString: "9VRT"), "delete from Approval where A_CallSign='9VRT' and A_L1='4' and A_L2='7' and A_L3='10' and A_L4='1'");
             //FixSpares("9BRV", "5", "1", "0", new MsSqlConnection(connectionString: "9BRV"), new MsSqlConnection(connectionString: "MsSqlConnectionString"), false);
             //Shippernetix.Job_History.Fix("9VRT", "4","7","10","1", "A", "2", new MsSqlConnection(connectionString: "MsSqlConnectionString"), new MsSqlConnection(connectionString: "9VRT"), true);
             //Shippernetix.Job_History.Fix("9HLN", "4", "1", "4", "1", "A", "1", new MsSqlConnection(connectionString: "9HLN"), new MsSqlConnection(connectionString: "MsSqlConnectionString"), true);
             //Shippernetix.Job_History.FixFromOfficeToVessel("9PTY", "6", "1", "7", "4", "B", "1");
-            //Shippernetix.Job_History.FixFromOfficeToVessel("9PWR", "3", "2", "1", "2", "A", "2");
-            //Shippernetix.Job_History.FixFromOfficeToVessel("9PTY", "13", "1", "19", "1", "A", "233");
+            //Shippernetix.Job_History.FixFromVesselToOffice("9PRD", "16", "1", "1", "1", "A", "14");
+            //Shippernetix.Job_History.FixFromOfficeToVessel("9BRV", "2", "3", "1", "1", "B", "8");
+            //Shippernetix.Job_History.FixFromOfficeToVessel("9BRV", "2", "3", "5", "1", "D", "6");
+            // Shippernetix.Job_History.FixFromOfficeToVessel("9BRV", "2", "3", "9", "2", "A", "21");
+            //Shippernetix.Job_History.FixFromOfficeToVessel("9BRV", "2", "3", "2", "3", "A", "5");
+
+            ////NO.1 CYL.  01.01.13.07 - A / 21.01.2022  tarihinde yapılmıştır.
+            ////NO.2 CYL.  01.01.13.08 - A / 22.01 2022  tarihinde yapılmıştır.
+            ////NO.4 CYL.  01.01.13.10 - A / 26.01.2022  tarihinde yapılmıştır.
+            ////NO.5 CYL.  01.01.13.11 - A / 22.01 2022  tarihinde yapılmıştır.
+            ////NO.6 CYL.  01.01.13.12 - A / 26.01.2022  tarihinde yapılmıştır.
+
+            //Shippernetix.Job_History.ReCalculateLastJob(new MsSqlConnection(connectionString: "MsSqlConnectionString"), callSign: "9HLN", "1", "1", "13", "7", "A", "2022-01-21 00:00:00.000");
+
+            //Shippernetix.Job_History.ReCalculateLastJob(new MsSqlConnection(connectionString: "MsSqlConnectionString"), callSign: "9HLN", "1", "1", "13", "8", "A", "2022-01-22 00:00:00.000");
+
+            //Shippernetix.Job_History.ReCalculateLastJob(new MsSqlConnection(connectionString: "MsSqlConnectionString"), callSign: "9HLN", "1", "1", "13", "10", "A", "2022-01-26 00:00:00.000");
+
+            //Shippernetix.Job_History.ReCalculateLastJob(new MsSqlConnection(connectionString: "MsSqlConnectionString"), callSign: "9HLN", "1", "1", "13", "11", "A", "2022-01-22 00:00:00.000");
+
+            //Shippernetix.Job_History.ReCalculateLastJob(new MsSqlConnection(connectionString: "MsSqlConnectionString"), callSign: "9HLN", "1", "1", "13", "12", "A", "2022-01-26 00:00:00.000");
+
+
+            //Defect.FixFromOfficeToVessel("9HNK","Def-");
+
+            //Shippernetix.Job_History.FixFromOfficeToVessel("9BUD", "5", "8", "6", "1", "Def-1968", "1");
+            //Shippernetix.Job_History.FixFromOfficeToVessel("9BUD", "5", "8", "6", "1", "Def-2958", "1");
+            //Shippernetix.Job_History.FixFromOfficeToVessel("9BUD", "5", "10", "1", "2", "Def-2962", "1");
+
+
+
             Console.WriteLine("");
             //Shippernetix.Defect.FixDefectsIsHiddenStatus("9HLN",new MsSqlConnection(connectionString: "MsSqlConnectionString"),new MsSqlConnection(connectionString: "9HLN"));
 
@@ -175,7 +205,7 @@ namespace Synchronizer
 
             foreach (var vessel in Vessel_Master.Vessels)
             { 
-               if (vessel.CallSign != "9HLN")
+               if (vessel.CallSign != "9ANT")
                     continue;
 
                 var source = new Side("Office", "MsSqlConnectionString",true);
@@ -305,7 +335,7 @@ namespace Synchronizer
                                         "from(select Je_CallSign, Je_L1, Je_L2, Je_L3, Je_L4, Je_JobCode, Je_JobNo, Je_Status " +
                                         "from(select jh1.* from Job_History jh1 where jh1.Je_CallSign = @CallSign)x " +
                                         "group by Je_CallSign, Je_L1, Je_L2, Je_L3, Je_L4, Je_JobCode, Je_JobNo, Je_Status)y)z " +
-                                        "where Je_JobCode not like '%Def%' and Je_JobNo < MaxJobNumber and Je_Status<>'COMPLETED'";
+                                        "where (Je_JobCode not like '%Def%' and Je_JobCode not like '%Dam%') and ((Je_JobNo < MaxJobNumber and Je_Status<>'COMPLETED') or (MaxJobNumber=1 and Je_Status='COMPLETED'))";
 
 
                     var sourceList = SqlManager.ExecuteQuery(queryToFix,
@@ -333,7 +363,37 @@ namespace Synchronizer
                     {
                         //actionForComplete(source.Connection,sourceItem.Je_CallSign.ToString(),sourceItem.Je_L1.ToString(), sourceItem.Je_L2.ToString(), sourceItem.Je_L3.ToString(), sourceItem.Je_L4.ToString(), sourceItem.Je_JobCode.ToString(), sourceItem.Je_JobNo.ToString());
 
-                        Shippernetix.Job_History.Fix(sourceItem.Je_CallSign.ToString(), sourceItem.Je_L1.ToString(), sourceItem.Je_L2.ToString(), sourceItem.Je_L3.ToString(), sourceItem.Je_L4.ToString(), sourceItem.Je_JobCode.ToString(), sourceItem.Je_JobNo.ToString(), new MsSqlConnection(connectionString: vessel.CallSign), new MsSqlConnection(connectionString: "MsSqlConnectionString"), true);
+                        if (Convert.ToInt32(sourceItem.MaxJobNumber) == 1)
+                        {
+                            var maxJobNumberForCompleted = Convert.ToInt32(sourceItem.MaxJobNumber);
+
+                            var parameters = new Dictionary<string, object>()
+                                {
+                                    {"CallSign",sourceItem.Je_CallSign.ToString() },
+                                    {"L1", sourceItem.Je_L1.ToString()},
+                                    {"L2", sourceItem.Je_L2.ToString()},
+                                    {"L3", sourceItem.Je_L3.ToString()},
+                                    {"L4", sourceItem.Je_L4.ToString()},
+                                    {"JobCode",  sourceItem.Je_JobCode.ToString()},
+                                    {"LastCompletedJobNo",maxJobNumberForCompleted}
+                                };
+
+                            var updateLastCompletedJobStatusQuery = "update Job_History set Je_Status='NEXT JOB' where Je_CallSign = @CallSign and Je_L1 = @L1 and Je_L2 = @L2 and Je_L3 = @L3 and Je_L4 = @L4 and Je_JobCode = @JobCode and Je_JobNo=@LastCompletedJobNo";
+
+                            var arc = SqlManager.ExecuteNonQuery(updateLastCompletedJobStatusQuery, parameters, source.Connection);
+
+                            Console.WriteLine($"Updating lastCompletedJobStatus({maxJobNumberForCompleted}) as Next Job : {arc > 0}");
+
+                            updateLastCompletedJobStatusQuery = "update Job_History set Je_Status='COMPLETED' where Je_CallSign = @CallSign and Je_L1 = @L1 and Je_L2 = @L2 and Je_L3 = @L3 and Je_L4 = @L4 and Je_JobCode = @JobCode and Je_JobNo=@LastCompletedJobNo";
+
+                            arc = SqlManager.ExecuteNonQuery(updateLastCompletedJobStatusQuery, parameters, source.Connection);
+
+                            Console.WriteLine($"Updating lastCompletedJobStatus({maxJobNumberForCompleted}) as Completed : {arc > 0}");
+                        }
+                        else
+                        {
+                            Shippernetix.Job_History.Fix(sourceItem.Je_CallSign.ToString(), sourceItem.Je_L1.ToString(), sourceItem.Je_L2.ToString(), sourceItem.Je_L3.ToString(), sourceItem.Je_L4.ToString(), sourceItem.Je_JobCode.ToString(), sourceItem.Je_JobNo.ToString(), target.Connection,source.Connection, true);
+                        }
 
                         Console.WriteLine(sourceItem.ShippernetixId + " " + counter++);
                     }
@@ -365,7 +425,38 @@ namespace Synchronizer
                     {
                         //actionForComplete(target.Connection, targetItem.Je_CallSign.ToString(), targetItem.Je_L1.ToString(), targetItem.Je_L2.ToString(), targetItem.Je_L3.ToString(), targetItem.Je_L4.ToString(), targetItem.Je_JobCode.ToString(), targetItem.Je_JobNo.ToString());
 
-                        Shippernetix.Job_History.Fix(targetItem.Je_CallSign.ToString(), targetItem.Je_L1.ToString(), targetItem.Je_L2.ToString(), targetItem.Je_L3.ToString(), targetItem.Je_L4.ToString(), targetItem.Je_JobCode.ToString(), targetItem.Je_JobNo.ToString(), new MsSqlConnection(connectionString: "MsSqlConnectionString"), new MsSqlConnection(connectionString: vessel.CallSign), true);
+
+                        if (Convert.ToInt32(targetItem.MaxJobNumber) == 1)
+                        {
+                            var maxJobNumberForCompleted = Convert.ToInt32(targetItem.MaxJobNumber);
+
+                            var parameters = new Dictionary<string, object>()
+                                {
+                                    {"CallSign",targetItem.Je_CallSign.ToString() },
+                                    {"L1", targetItem.Je_L1.ToString()},
+                                    {"L2", targetItem.Je_L2.ToString()},
+                                    {"L3", targetItem.Je_L3.ToString()},
+                                    {"L4", targetItem.Je_L4.ToString()},
+                                    {"JobCode",  targetItem.Je_JobCode.ToString()},
+                                    {"LastCompletedJobNo",maxJobNumberForCompleted}
+                                };
+
+                            var updateLastCompletedJobStatusQuery = "update Job_History set Je_Status='NEXT JOB' where Je_CallSign = @CallSign and Je_L1 = @L1 and Je_L2 = @L2 and Je_L3 = @L3 and Je_L4 = @L4 and Je_JobCode = @JobCode and Je_JobNo=@LastCompletedJobNo";
+
+                            var arc = SqlManager.ExecuteNonQuery(updateLastCompletedJobStatusQuery, parameters, target.Connection);
+
+                            Console.WriteLine($"Updating lastCompletedJobStatus({maxJobNumberForCompleted}) as Next Job : {arc > 0}");
+
+                            updateLastCompletedJobStatusQuery = "update Job_History set Je_Status='COMPLETED' where Je_CallSign = @CallSign and Je_L1 = @L1 and Je_L2 = @L2 and Je_L3 = @L3 and Je_L4 = @L4 and Je_JobCode = @JobCode and Je_JobNo=@LastCompletedJobNo";
+
+                            arc = SqlManager.ExecuteNonQuery(updateLastCompletedJobStatusQuery, parameters, target.Connection);
+
+                            Console.WriteLine($"Updating lastCompletedJobStatus({maxJobNumberForCompleted}) as Completed : {arc > 0}");
+                        }
+                        else
+                        {
+                            Shippernetix.Job_History.Fix(targetItem.Je_CallSign.ToString(), targetItem.Je_L1.ToString(), targetItem.Je_L2.ToString(), targetItem.Je_L3.ToString(), targetItem.Je_L4.ToString(), targetItem.Je_JobCode.ToString(), targetItem.Je_JobNo.ToString(), source.Connection,target.Connection, true);
+                        }
                         Console.WriteLine(targetItem.ShippernetixId + " " + counter++);
                     }
                 }
@@ -374,9 +465,9 @@ namespace Synchronizer
                 {
                     var onlyMail = false;
 
-                    Structure.Sync(source, target, vessel, onlyMail);
-                    Job_Definition.Sync(source, target, vessel, onlyMail);
-                    Defect.Sync(source, target, vessel, onlyMail);
+                    //Structure.Sync(source, target, vessel, onlyMail);
+                    //Job_Definition.Sync(source, target, vessel, onlyMail);
+                    //Defect.Sync(source, target, vessel, onlyMail);
                     Job_History.Sync(source, target, vessel, onlyMail);
                 }
                 else
@@ -471,7 +562,7 @@ namespace Synchronizer
                 };
             });
 
-            new MailManager("mail.gedenlines.com", 25, "karar@gedenlines.com", "Mayhem893", "GedenErp", false);
+            new MailManager("mail.gedenlines.com", 25, "shippernetix@gedenlines.com", null, "GedenErp", false);
         }
 
         public static void FixSpares(string callSign, string group, string product, string item, CustomConnection sourceConnection, CustomConnection targetConnection, bool prepareForVessel)

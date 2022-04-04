@@ -544,9 +544,13 @@ namespace Synchronizer.Shippernetix
 
             var job_History = new Job_History(callSign,l1,l2,l3,l4,jobCode,jobNumber, sourceColumnListDifferentWithTarget,sourceConnection,prepareForVessel);
 
+            SqlManager.DisableTrigger("JHIS_ED_CC", "Job_History", targetConnection);
+
             var affectedRowsCount = SqlManager.ExecuteNonQuery(sql: job_History.Table.GetUpdateQueries, parameters: null, targetConnection);
 
-            Console.WriteLine("affectedRowsCount : {0}" ,affectedRowsCount);
+            SqlManager.EnableTrigger("JHIS_ED_CC", "Job_History", targetConnection);
+
+            Console.WriteLine($"{callSign}-{l1}-{l2}-{l3}-{l4}-{jobCode}-{jobNumber} fixing {affectedRowsCount}");
         }
 
 
@@ -580,13 +584,13 @@ namespace Synchronizer.Shippernetix
         {
             var sql = "select Dai_CallSign, Dai_DamageNo,Dai_Corrective,Dai_CloseDate from Job_History jh inner join Defects d on jh.Je_CallSign = d.Dai_CallSign and jh.Je_JobCode = d.Dai_DamageNo where d.Dai_Status = 'CLOSED' and Je_Status = 'NEXT JOB'";
 
-            var listToFix = SqlManager.ExecuteQuery(sql, connection: connection).Select(r=>new 
+            var listToFix = SqlManager.ExecuteQuery(sql, connection: connection).Select(r => new
             {
                 Dai_CallSign = r["Dai_CallSign"]?.ToString(),
                 Dai_DamageNo = r["Dai_DamageNo"]?.ToString(),
                 Dai_Corrective = r["Dai_Corrective"]?.ToString(),
-                Dai_CloseDate = Convert.ToDateTime(r["Dai_CloseDate"]?.ToString())
-            });
+                Dai_CloseDate = Convert.ToDateTime(r["Dai_CloseDate"]?.ToString()) <= DateTime.MinValue ? new DateTime(year: 1800,month:1,day:1) : Convert.ToDateTime(r["Dai_CloseDate"]?.ToString())
+            }) ;
 
             var updateJobHistorySql = "UPDATE Job_History " +
                 "SET Je_Status = 'COMPLETED', Je_StartDate = @Dai_CloseDate, Je_FinishDate = @Dai_CloseDate, Je_ConfirmText = @Dai_Corrective " +
@@ -608,7 +612,22 @@ namespace Synchronizer.Shippernetix
             ClearDefectsJobHasJobNumberMoreThan1(connection);
         }
 
-        public static void ReCalculateLastJob(CustomConnection connection,string callSign,string l1,string l2,string l3,string l4,string jobCode,Action<int> actionToWorkWithLastCompletedJob = null)
+        public static void ReCalculateLastJob(MsSqlConnection connection, string callSign, string l1, string l2, string l3, string l4, string jobCode,string date)
+        {
+            var action = new Action<MsSqlConnection, string, string, string, string, string, string, int>((MsSqlConnection connection, string callSign, string l1, string l2, string l3, string l4, string jobCode, int maxCompletedJobNumber) =>
+            {
+                var updateJobHistorySql = $"update Job_History set Je_StartDate='{date}',Je_FinishDate='{date}' where Je_CallSign='{callSign}' and Je_L1='{l1}' and Je_L2='{l2}' and Je_L3='{l3}' and Je_L4='{l4}' and Je_JobCode='{jobCode}' and Je_JobNo='{maxCompletedJobNumber}'";
+
+                var arc = SqlManager.ExecuteNonQuery(updateJobHistorySql, null, connection);
+
+                Console.WriteLine($"{arc > 0}");
+            });
+
+            ReCalculateLastJob(connection, callSign, l1, l2, l3, l4, jobCode, action);
+        }
+
+        public static void ReCalculateLastJob(MsSqlConnection connection,string callSign,string l1,string l2,string l3,string l4,string jobCode,
+            Action<MsSqlConnection,string,string,string,string,string,string,int> actionToWorkWithLastCompletedJob = null)
         {
             if (string.IsNullOrEmpty(callSign) && string.IsNullOrEmpty(l1) && string.IsNullOrEmpty(l2) && string.IsNullOrEmpty(l3) && string.IsNullOrEmpty(l4) && string.IsNullOrEmpty(jobCode))
                 throw new Exception("Please set required parameters");
@@ -635,7 +654,7 @@ namespace Synchronizer.Shippernetix
                 throw new Exception("maxJobNumberForCompleted>=maxJobNumberForNextJob");
 
             if (actionToWorkWithLastCompletedJob != null)
-                actionToWorkWithLastCompletedJob.Invoke(maxJobNumberForCompleted);
+                actionToWorkWithLastCompletedJob.Invoke(connection,callSign,l1,l2,l3,l4,jobCode,maxJobNumberForCompleted);
 
             var deleteLastNextJobQuery = "delete from Job_History where Je_CallSign = @CallSign and Je_L1 = @L1 and Je_L2 = @L2 and Je_L3 = @L3 and Je_L4 = @L4 and Je_JobCode = @JobCode and Je_JobNo=@LastNextJobNo";
 

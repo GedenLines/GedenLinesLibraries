@@ -114,54 +114,87 @@ namespace Synchronizer.Shippernetix
                                     })
                                     .ToList().FirstOrDefault();
 
+                if (targetStructure != null)
+                {
 
+                    var sourceStructureSql = "SELECT * FROM Structure WHERE En_CallSign = @CallSign and  En_L1 = @L1 and En_L2 = @L2 and En_L3 = @L3 and En_L4 = @L4";
 
-                var sourceStructureSql = "SELECT * FROM Structure WHERE En_CallSign = @CallSign and  En_L1 = @L1 and En_L2 = @L2 and En_L3 = @L3 and En_L4 = @L4";
-
-                var sourceStructure = SqlManager.ExecuteQuery(sourceStructureSql,
-                    new Dictionary<string, object>()
-                    {
+                    var sourceStructure = SqlManager.ExecuteQuery(sourceStructureSql,
+                        new Dictionary<string, object>()
+                        {
                                 { "CallSign",defectToProcess.Dai_CallSign },
                             {"L1",targetStructure.En_L1 },
                             {"L2",targetStructure.En_L2 },
                             {"L3",targetStructure.En_L3 },
                             {"L4",targetStructure.En_L4 }
-                    },
-                    source.Connection)
-                    .Select(d => new
+                        },
+                        source.Connection)
+                        .Select(d => new
+                        {
+                            ShippernetixId = string.Format("{0}-{1}-{2}-{3}-{4}", d["En_CallSign"], d["En_L1"], d["En_L2"], d["En_L3"], d["En_L4"]),
+                            En_CallSign = d["En_CallSign"],
+                            En_L1 = d["En_L1"],
+                            En_L2 = d["En_L2"],
+                            En_L3 = d["En_L3"],
+                            En_L4 = d["En_L4"],
+                            En_Desc = d["En_Desc"]
+                        })
+                        .ToList().FirstOrDefault();
+
+                    var updateTargetStructreSql = "update Structure set En_Desc=@Desc where En_CallSign = @CallSign and  En_L1 = @L1 and En_L2 = @L2 and En_L3 = @L3 and En_L4 = @L4";
+
+                    var ar = SqlManager.ExecuteNonQuery(updateTargetStructreSql, new Dictionary<string, object>()
                     {
-                        ShippernetixId = string.Format("{0}-{1}-{2}-{3}-{4}", d["En_CallSign"], d["En_L1"], d["En_L2"], d["En_L3"], d["En_L4"]),
-                        En_CallSign = d["En_CallSign"],
-                        En_L1 = d["En_L1"],
-                        En_L2 = d["En_L2"],
-                        En_L3 = d["En_L3"],
-                        En_L4 = d["En_L4"],
-                        En_Desc = d["En_Desc"]
-                    })
-                    .ToList().FirstOrDefault();
+                        {"Desc" ,sourceStructure.En_Desc},
+                        {"CallSign" ,sourceStructure.En_CallSign},
+                        {"L1" ,sourceStructure.En_L1},
+                        {"L2" ,sourceStructure.En_L2},
+                        {"L3" ,sourceStructure.En_L3},
+                        {"L4" ,sourceStructure.En_L4}
+                    }, target.Connection);
 
 
-                var updateTargetStructreSql = "update Structure set En_Desc=@Desc where En_CallSign = @CallSign and  En_L1 = @L1 and En_L2 = @L2 and En_L3 = @L3 and En_L4 = @L4";
-
-                var ar = SqlManager.ExecuteNonQuery(updateTargetStructreSql,new Dictionary<string, object>() 
-                {
-                    {"Desc" ,sourceStructure.En_Desc},
-                    {"CallSign" ,sourceStructure.En_CallSign},
-                    {"L1" ,sourceStructure.En_L1},
-                    {"L2" ,sourceStructure.En_L2},
-                    {"L3" ,sourceStructure.En_L3},
-                    {"L4" ,sourceStructure.En_L4}
-                },target.Connection);
+                    var updateTargetDefectSql = "update Defects set Dai_UnitDesc=@Desc where Dai_CallSign=@CallSign and Dai_DamageNo=@DamageNo";
 
 
-                var updateTargetDefectSql = "update Defects set Dai_UnitDesc=@Desc where Dai_CallSign=@CallSign and Dai_DamageNo=@DamageNo";
+                    SqlManager.DisableTrigger("DEFECT_UPD", "Defects", target.Connection);
+                    SqlManager.DisableTrigger("DEFECT_UPT_CC", "Defects", target.Connection);
 
-                var ar2 = SqlManager.ExecuteNonQuery(updateTargetDefectSql, new Dictionary<string, object>()
-                {
-                    {"Desc",sourceStructure.En_Desc },
-                    {"CallSign", defectToProcess.Dai_CallSign},
-                    {"DamageNo", defectToProcess.Dai_DamageNo}
-                }, target.Connection);
+                    var ar2 = SqlManager.ExecuteNonQuery(updateTargetDefectSql, new Dictionary<string, object>()
+                    {
+                        {"Desc",sourceStructure.En_Desc },
+                        {"CallSign", defectToProcess.Dai_CallSign},
+                        {"DamageNo", defectToProcess.Dai_DamageNo}
+                    }, target.Connection);
+
+
+                    SqlManager.EnableTrigger("DEFECT_UPD", "Defects", target.Connection);
+                    SqlManager.EnableTrigger("DEFECT_UPT_CC", "Defects", target.Connection);
+
+                    try
+                    {
+                        Shippernetix.Job_History.Fix(sourceStructure.En_CallSign.ToString(), sourceStructure.En_L1.ToString(), sourceStructure.En_L2.ToString(), sourceStructure.En_L3.ToString(), sourceStructure.En_L4.ToString(), defectToProcess.Dai_DamageNo.ToString(), "1", new MsSqlConnection(connectionString: defectToProcess.Dai_CallSign.ToString()), new MsSqlConnection(connectionString: "MsSqlConnectionString"), true);
+
+                        var ar3 = SqlManager.ExecuteNonQuery("delete from Job_History where Je_CallSign=@CallSign and Je_L1=@L1 and  Je_L2=@L2 and Je_L3=@L3 and Je_L4=@L4 and Je_JobCode=@JobCode and Je_JobNo>1",
+                            new Dictionary<string, object>()
+                            {
+                                {"CallSign", sourceStructure.En_CallSign },
+                                {"L1",sourceStructure.En_L1},
+                                {"L2", sourceStructure.En_L2},
+                                {"L3", sourceStructure.En_L3},
+                                {"L4", sourceStructure.En_L4},
+                                {"JobCode", defectToProcess.Dai_DamageNo}
+                            }, new MsSqlConnection(connectionString: "MsSqlConnectionString"));
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine("12777");
+                        Console.WriteLine(ex);
+                    }
+
+                }
+
+
 
                 //targetColumnListDifferentWithSource.AddRange(new[] {      "Dai_DefDoc1"
                 //                                          ,"Dai_DefDoc2"
@@ -177,33 +210,16 @@ namespace Synchronizer.Shippernetix
                     target.Connection,
                     target.PrepareForVesselSide);
 
+                SqlManager.DisableTrigger("DEFECT_INS", "Defects", source.Connection);
+
                 var affectedRowsCount = SqlManager.ExecuteNonQuery(sql: defect.Table.GetInsertQueries, parameters: null, source.Connection);
+
+                SqlManager.EnableTrigger("DEFECT_INS", "Defects", source.Connection);
 
                 if (affectedRowsCount > 0)
                     logMessages.Add(messageAction(string.Format("{0} Transfered From {0} To {1}", defectToProcess.ShippernetixId, source.Name, target.Name)));
                 else
                     logMessages.Add(messageAction(string.Format("An error occured while transfering structure : {0}", defectToProcess.ShippernetixId)));
-
-                try
-                {
-                    Shippernetix.Job_History.Fix(sourceStructure.En_CallSign.ToString(), sourceStructure.En_L1.ToString(), sourceStructure.En_L2.ToString(), sourceStructure.En_L3.ToString(), sourceStructure.En_L4.ToString(), defectToProcess.Dai_DamageNo.ToString(), "1", new MsSqlConnection(connectionString: defectToProcess.Dai_CallSign.ToString()), new MsSqlConnection(connectionString: "MsSqlConnectionString"), false);
-
-                    var ar3 = SqlManager.ExecuteNonQuery("delete from Job_History where Je_CallSign=@CallSign and Je_L1=@L1 and  Je_L2=@L2 and Je_L3=@L3 and Je_L4=@L4 and Je_JobCode=@JobCode and Je_JobNo>1",
-                        new Dictionary<string, object>()
-                        {
-                        {"CallSign", sourceStructure.En_CallSign },
-                        {"L1",sourceStructure.En_L1},
-                        {"L2", sourceStructure.En_L2},
-                        {"L3", sourceStructure.En_L3},
-                        {"L4", sourceStructure.En_L4},
-                        {"JobCode", defectToProcess.Dai_DamageNo}
-                        }, new MsSqlConnection(connectionString: "MsSqlConnectionString"));
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine("12777");
-                    Console.WriteLine(ex);
-                }
 
             }
 
@@ -218,10 +234,12 @@ namespace Synchronizer.Shippernetix
                                     source.PrepareForVesselSide);
 
                 SqlManager.DisableTrigger("DEFECT_INS", "Defects", target.Connection);
+                SqlManager.DisableTrigger("DEFECT_INS_CC", "Defects", target.Connection);
 
                 var affectedRowsCount = SqlManager.ExecuteNonQuery(sql: defect.Table.GetInsertQueries, parameters: null, target.Connection);
 
                 SqlManager.EnableTrigger("DEFECT_INS", "Defects", target.Connection);
+                SqlManager.EnableTrigger("DEFECT_INS_CC", "Defects", target.Connection);
 
                 if (affectedRowsCount > 0)
                     logMessages.Add(messageAction(string.Format("{0} Transfered From {0} To {1}", defectToProcess.ShippernetixId, source.Name, source.Name)));
@@ -264,10 +282,12 @@ namespace Synchronizer.Shippernetix
                                                         source.PrepareForVesselSide);
 
                     SqlManager.DisableTrigger("DEFECT_UPD", "Defects", target.Connection);
+                    SqlManager.DisableTrigger("DEFECT_UPT_CC", "Defects", target.Connection);
 
                     var affectedRowsCount = SqlManager.ExecuteNonQuery(sql: defect.Table.GetUpdateQueries, parameters: null, target.Connection);
 
                     SqlManager.EnableTrigger("DEFECT_UPD", "Defects", target.Connection);
+                    SqlManager.EnableTrigger("DEFECT_UPT_CC", "Defects", target.Connection);
 
                     if (affectedRowsCount > 0)
                         logMessages.Add(messageAction(string.Format("{0} Transfered From {1} To {2}", sourceDifference.ShippernetixId, source.Name, target.Name)));
@@ -310,7 +330,13 @@ namespace Synchronizer.Shippernetix
             }
 
             SqlManager.EnableTrigger("DEFECT_UPD", "Defects", target.Connection);
+            SqlManager.EnableTrigger("DEFECT_UPD", "Defects", source.Connection);
+
             SqlManager.EnableTrigger("DEFECT_INS", "Defects", target.Connection);
+            SqlManager.EnableTrigger("DEFECT_INS", "Defects", source.Connection);
+
+            SqlManager.EnableTrigger("DEFECT_INS_CC", "Defects", target.Connection);
+            SqlManager.EnableTrigger("DEFECT_UPT_CC", "Defects", target.Connection);
 
             Program.SendMail($"Defect/{vessel.Name}({vessel.CallSign})", string.Join("</br></br>", logMessages));
         }
@@ -347,6 +373,37 @@ namespace Synchronizer.Shippernetix
 
                 Console.WriteLine("FixDefectsIsHiddenStatus :" + arc + " affected rows count");
             }            
+        }
+
+        public static void FixFromOfficeToVessel(string callSign, string defectNumber)
+        {
+            var officeConnection = new MsSqlConnection(connectionString: "MsSqlConnectionString");
+            var vesselConnection = new MsSqlConnection(connectionString: callSign);
+
+            Fix(callSign, defectNumber,officeConnection,vesselConnection);
+        }
+
+        public static void FixFromVesselToOffice(string callSign, string defectNumber)
+        {
+            var officeConnection = new MsSqlConnection(connectionString: "MsSqlConnectionString");
+            var vesselConnection = new MsSqlConnection(connectionString: callSign);
+
+            Fix(callSign,defectNumber,vesselConnection,officeConnection);
+        }
+
+        public static void Fix(string callSign, string defectNumber, CustomConnection sourceConnection, CustomConnection targetConnection)
+        {
+            var sourceColumnList = SqlManager.SelectColumnNamesForMSSQL("Defects", sourceConnection).Select(d => d["COLUMN_NAME"].ToString()).ToList();
+
+            var targetColumnList = SqlManager.SelectColumnNamesForMSSQL("Defects", targetConnection).Select(d => d["COLUMN_NAME"].ToString()).ToList();
+
+            var sourceColumnListDifferentWithTarget = sourceColumnList.Except(targetColumnList).ToList();
+
+            var defect = new Defect(callSign, defectNumber, sourceColumnListDifferentWithTarget, sourceConnection, true);
+
+            var affectedRowsCount = SqlManager.ExecuteNonQuery(sql: defect.Table.GetUpdateQueries, parameters: null, targetConnection);
+
+            Console.WriteLine($"{callSign}-{defectNumber} is fixing :  {affectedRowsCount}");
         }
     }
 }

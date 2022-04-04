@@ -44,8 +44,19 @@ namespace ExchangeMailToFile
 
                                             CustomFile.CreateDirectoryIfNotExists(path);
 
-                                            var isWrittenToFile = new CustomFile(fileName, ".pdf").SetData(fileContent)
+                                            var isWrittenToFile = false;
+
+                                            try
+                                            {
+                                                isWrittenToFile = new CustomFile(fileName, ".pdf").SetData(fileContent)
                                                                                                 .WriteAllBytes(CustomFile.CombinePaths(path, fileName));
+                                            }
+                                            catch (Exception ex)
+                                            {
+
+                                                throw;
+                                            }
+                                            
 
                                             if (isWrittenToFile)
                                             {
