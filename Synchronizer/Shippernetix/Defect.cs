@@ -116,7 +116,6 @@ namespace Synchronizer.Shippernetix
 
                 if (targetStructure != null)
                 {
-
                     var sourceStructureSql = "SELECT * FROM Structure WHERE En_CallSign = @CallSign and  En_L1 = @L1 and En_L2 = @L2 and En_L3 = @L3 and En_L4 = @L4";
 
                     var sourceStructure = SqlManager.ExecuteQuery(sourceStructureSql,

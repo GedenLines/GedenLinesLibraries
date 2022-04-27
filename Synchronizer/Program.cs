@@ -25,7 +25,7 @@ namespace Synchronizer
             });
         }
 
-        static void Main(string[] args)
+        public static void Main(string[] args)
         {
             Initialize();
 
@@ -90,9 +90,18 @@ namespace Synchronizer
             //Shippernetix.Job_History.FixFromOfficeToVessel("9PTY", "6", "1", "7", "4", "B", "1");
             //Shippernetix.Job_History.FixFromVesselToOffice("9PRD", "16", "1", "1", "1", "A", "14");
             //Shippernetix.Job_History.FixFromOfficeToVessel("9BRV", "2", "3", "1", "1", "B", "8");
-            //Shippernetix.Job_History.FixFromOfficeToVessel("9BRV", "2", "3", "5", "1", "D", "6");
+
+            //Shippernetix.Job_History.FixFromOfficeToVessel("9HA2", "4", "3", "1", "4", "C", "4");
+            //Shippernetix.Job_History.FixFromOfficeToVessel("9RYL", "2", "3", "9", "3", "D", "1");
+            //Shippernetix.Job_History.FixFromOfficeToVessel("9RYL", "5", "2", "6", "1", "Def-1063", "1");
+            //Shippernetix.Job_History.FixFromOfficeToVessel("9RYL", "5", "8", "1", "1", "Def-1062", "1");
+            //Shippernetix.Job_History.FixFromOfficeToVessel("9RYL", "10", "2", "1", "1", "Def-867", "1");
+            //Shippernetix.Job_History.FixFromOfficeToVessel("9RYL", "10", "2", "1", "1", "Def-871", "1");
+            //Shippernetix.Job_History.FixFromOfficeToVessel("9RYL", "13", "1", "10", "3", "Def-1036", "1");
+            //Shippernetix.Job_History.FixFromOfficeToVessel("9RYL", "14", "6", "1", "8", "D", "1");
+            //Shippernetix.Job_History.FixFromOfficeToVessel("9RYL", "14", "6", "1", "8", "E", "1");
             // Shippernetix.Job_History.FixFromOfficeToVessel("9BRV", "2", "3", "9", "2", "A", "21");
-            //Shippernetix.Job_History.FixFromOfficeToVessel("9BRV", "2", "3", "2", "3", "A", "5");
+            //Shippernetix.Job_History.FixFromOfficeToVessel("9REF", "3", "6", "6", "1", "Def-1130", "1");
 
             ////NO.1 CYL.  01.01.13.07 - A / 21.01.2022  tarihinde yapılmıştır.
             ////NO.2 CYL.  01.01.13.08 - A / 22.01 2022  tarihinde yapılmıştır.
@@ -108,7 +117,7 @@ namespace Synchronizer
 
             //Shippernetix.Job_History.ReCalculateLastJob(new MsSqlConnection(connectionString: "MsSqlConnectionString"), callSign: "9HLN", "1", "1", "13", "11", "A", "2022-01-22 00:00:00.000");
 
-            //Shippernetix.Job_History.ReCalculateLastJob(new MsSqlConnection(connectionString: "MsSqlConnectionString"), callSign: "9HLN", "1", "1", "13", "12", "A", "2022-01-26 00:00:00.000");
+            //Shippernetix.Job_History.ReCalculateLastJob(new MsSqlConnection(connectionString: "MsSqlConnectionString"), callSign: "9HA2", "1", "1", "13", "12", "A", "2022-01-26 00:00:00.000");
 
 
             //Defect.FixFromOfficeToVessel("9HNK","Def-");
@@ -117,7 +126,7 @@ namespace Synchronizer
             //Shippernetix.Job_History.FixFromOfficeToVessel("9BUD", "5", "8", "6", "1", "Def-2958", "1");
             //Shippernetix.Job_History.FixFromOfficeToVessel("9BUD", "5", "10", "1", "2", "Def-2962", "1");
 
-
+            //Defect.FixFromOfficeToVessel("9REF", "Def-1130");
 
             Console.WriteLine("");
             //Shippernetix.Defect.FixDefectsIsHiddenStatus("9HLN",new MsSqlConnection(connectionString: "MsSqlConnectionString"),new MsSqlConnection(connectionString: "9HLN"));
@@ -205,7 +214,7 @@ namespace Synchronizer
 
             foreach (var vessel in Vessel_Master.Vessels)
             { 
-               if (vessel.CallSign != "9ANT")
+               if (vessel.CallSign != "9RYL")
                     continue;
 
                 var source = new Side("Office", "MsSqlConnectionString",true);
@@ -465,9 +474,9 @@ namespace Synchronizer
                 {
                     var onlyMail = false;
 
-                    //Structure.Sync(source, target, vessel, onlyMail);
-                    //Job_Definition.Sync(source, target, vessel, onlyMail);
-                    //Defect.Sync(source, target, vessel, onlyMail);
+                    Structure.Sync(source, target, vessel, onlyMail);
+                    Job_Definition.Sync(source, target, vessel, onlyMail);
+                    Defect.Sync(source, target, vessel, onlyMail);
                     Job_History.Sync(source, target, vessel, onlyMail);
                 }
                 else
