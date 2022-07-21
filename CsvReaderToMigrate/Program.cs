@@ -29,7 +29,8 @@ namespace CsvReaderToMigrate
             if (!SqlManager.CheckConnection(connection))
                 throw new Exception("Db Connection Problem Occured");
 
-
+            var structures = GetStructuresByVessel("9ALV", "ALL", "ALL", "ALL", "ALL", connection);
+            CloneStructureTo(structures, "9ALF", connection, true);
 
             //var structures = GetStructuresByVessel("9HM2", "16", "ALL", "ALL","ALL", connection);
             //CloneStructureTo(structures, "9ANT", connection,true);
@@ -51,11 +52,60 @@ namespace CsvReaderToMigrate
             try
             {
 
+                var sql = "select m.Name,jd.Jd_CallSign,jd.Jd_L1,jd.Jd_L2,jd.Jd_L3,jd.Jd_L4,jd.Jd_JobCode,jd.Jd_JobType,jd.Jd_JobTitle,jd.Jd_Desc,Jd_IntType,Jd_Int,Jd_RuntimeSourceCode,Jd_DepCode from Job_Definition jd left join Vessel_Master m on jd.Jd_CallSign=m.CallSign where jd.Jd_CallSign='9VLE'";
+
+                var rowsOfValueDescriptions = SqlManager.ExecuteQuery(sql: sql, connection: connection);
+
+                var counter = rowsOfValueDescriptions.Count;
+
+                foreach (var row in rowsOfValueDescriptions)
+                {
+                    try
+                    {
+                        Console.WriteLine($"{row["Jd_CallSign"]}-{ row["Jd_L1"] }-{row["Jd_L2"]}-{row["Jd_L3"]}-{row["Jd_L4"]}-{row["Jd_JobCode"] }");
+
+                        var inserted = SqlManager.ExecuteNonQuery(sql: "insert into TEMP_VALUE_JOB_DESC select '"+ row["Name"] + "',Jd_CallSign,Jd_L1,Jd_L2,Jd_L3,Jd_L4,Jd_JobCode,Jd_JobType,Jd_JobTitle,Jd_Desc,dbo.rtf2txt2(Jd_Desc) as RtxToPlain,Jd_IntType,Jd_Int,Jd_RuntimeSourceCode,Jd_DepCode from Job_Definition where Jd_CallSign=@Jd_CallSign and Jd_L1=@Jd_L1 and Jd_L2=@Jd_L2 and Jd_L3=@Jd_L3 and Jd_L4=@Jd_L4 and Jd_JobCode=@Jd_JobCode", 
+                            parameters:new Dictionary<string, object>() 
+                            {
+                                {"Jd_CallSign",row["Jd_CallSign"]},
+                                {"Jd_L1",row["Jd_L1"] },
+                                {"Jd_L2", row["Jd_L2"]},
+                                {"Jd_L3", row["Jd_L3"]},
+                                {"Jd_L4", row["Jd_L4"]},
+                                {"Jd_JobCode", row["Jd_JobCode"] }
+                            },connection: connection);
+
+                        if (inserted != 1)
+                        {
+                            inserted = SqlManager.ExecuteNonQuery(sql: "insert into TEMP_VALUE_JOB_DESC select '" + row["Name"] + "',Jd_CallSign,Jd_L1,Jd_L2,Jd_L3,Jd_L4,Jd_JobCode,Jd_JobType,Jd_JobTitle,Jd_Desc,null as RtxToPlain,Jd_IntType,Jd_Int,Jd_RuntimeSourceCode,Jd_DepCode from Job_Definition where Jd_CallSign=@Jd_CallSign and Jd_L1=@Jd_L1 and Jd_L2=@Jd_L2 and Jd_L3=@Jd_L3 and Jd_L4=@Jd_L4 and Jd_JobCode=@Jd_JobCode",
+                            parameters: new Dictionary<string, object>()
+                            {
+                                {"Jd_CallSign",row["Jd_CallSign"]},
+                                {"Jd_L1",row["Jd_L1"] },
+                                {"Jd_L2", row["Jd_L2"]},
+                                {"Jd_L3", row["Jd_L3"]},
+                                {"Jd_L4", row["Jd_L4"]},
+                                {"Jd_JobCode", row["Jd_JobCode"] }
+                            }, connection: connection);
+                        }
+
+                    }
+                    catch (Exception ex)
+                    {
+
+                    }
+
+                    Console.WriteLine("Counter : " + counter--);
+                }
+
+
+
+
                 CloneStructureTo(structures: new List<Structure>()
                 {
-                    new Structure("9HM2","14","6","1","6")
+                    new Structure("9PRK","5","3","2","1")
                 },
-                ToCallSign: "9RYL",
+                ToCallSign: "9PRT",
                 connection: connection,
                 cloneJobDefinitions: true);
 

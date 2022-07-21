@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Mail;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Transactions;
 
 namespace Synchronizer
@@ -17,8 +18,9 @@ namespace Synchronizer
         public static void SendMail(string subject,string message)
         {
             new MailManager(o => o.Code == "GedenErp")
-                .Prepare(new Mail(new MailAddress("karar@gedenlines.com"), null, $"Synchronization Operation 101 / {subject}", $"{message}")
-                            .AddTo(new MailAddress("bt@gedenlines.com")))
+                .Prepare(new Mail(new MailAddress("shippernetix@gedenlines.com"), null, $"Synchronization Operation 101 / {subject}", $"{message}")
+            //.AddTo(new MailAddress("bt@gedenlines.com")))
+            .AddTo(new MailAddress("karar@gedenlines.com")))
             .Send((ex) =>
             {
                 Console.WriteLine(ex.Message);
@@ -29,187 +31,91 @@ namespace Synchronizer
         {
             Initialize();
 
-            //for (int i = 0; i < Vessel_Master.Vessels.Count; i++)
-            //{
-            //    var vessel = Vessel_Master.Vessels[i];
-
-            //    Automat automat = new Automat(vessel.CallSign,vessel.Name);
-
-            //    automat.AddJob(new Job("Job_History",1000,null,true)
-            //        .SetAction(()=> 
-            //        {
-            //            Console.WriteLine($"{vessel.Name} {vessel.CallSign}");
-            //        }));
-
-            //}
-
             Service.Start();
 
 
+            Console.WriteLine();
 
-            ////Evrim Bey İstek
-            //var jhCallSign = "9PWR";
 
-            //int jhL1 = 5;
+            //var q1000 = "select Je_CallSign,Je_L1,Je_L2,Je_L3,Je_L4,Je_JobCode,Je_JobNo,Je_ConfirmText from Job_History j right join Vessel_Master vm on vm.CallSign = j.Je_CallSign where vm.Active = 1 and j.Je_Status = 'COMPLETED' and(Je_CallSign + '-' + Je_L1 + '-' + Je_L2 + '-' + Je_L3 + '-' + Je_L4 + '-' + Je_JobCode + '-' + CONVERT(varchar(10), Je_JobNo)) not in (select(CallSign + '-' + L1 + '-' + L2 + '-' + L3 + '-' + L4 + '-' + JobCode + '-' + CONVERT(varchar(10), JobNo)) from Job_History_DetailsOfJobDone)";
 
-            //int jhL2 = 3;
+            //var list = SqlManager.ExecuteQuery(q1000,connection:new MsSqlConnection(connectionString: "MsSqlConnectionString"));
 
-            //int jhL3 = 2;
+            //var cc = 0;
 
-            //int jhL4 = 1;
+            //var tList = new List<Task>();
 
-            //var jhJobCode = "G";
-
-            //Shippernetix.Job_History.ReCalculateLastJob(new MsSqlConnection(connectionString: "MsSqlConnectionString"), callSign: jhCallSign, l1: jhL1.ToString(), l2: jhL2.ToString(), l3: jhL3.ToString(), l4: jhL4.ToString(), jobCode: jhJobCode, actionToWorkWithLastCompletedJob: null);
-            ////for (int i = 1; i < 15; i++)
+            //foreach (var item in list)
             //{
-            //    jhL4 = i;
-
-            //    var action = new Action<int>((int maxLastJobNumber) =>
+            //    var t = new Task(()=> 
             //    {
-            //        //var date = "2021-30-11 00:00:00.000";
+            //        try
+            //        {
+            //            Console.WriteLine(cc++);
 
-            //        //var updateJobHistorySql = $"update Job_History set Je_StartDate='{date}',Je_FinishDate='{date}' where Je_CallSign='{jhCallSign}' and Je_L1='{jhL1}' and Je_L2='{jhL2}' and Je_L3='{jhL3}' and Je_L4='{jhL4}' and Je_JobCode='{jhJobCode}' and Je_JobNo='{maxLastJobNumber}'";
+            //            var isExisted = SqlManager.Any("select * from Job_History_DetailsOfJobDone where CallSign=@CallSign and L1=@L1 and L2=@L2 and L3=@L3 and L4=@L4 and JobCode=@JobCode and JobNo=@JobNo", new Dictionary<string, object>()
+            //            {
+            //                    { "CallSign",item["Je_CallSign"]},
+            //                    { "L1",item["Je_L1"]},
+            //                    { "L2",item["Je_L2"]},
+            //                    { "L3",item["Je_L3"]},
+            //                    { "L4",item["Je_L4"]},
+            //                    { "JobCode",item["Je_JobCode"]},
+            //                    { "JobNo",item["Je_JobNo"]}
+            //            },
+            //                new MsSqlConnection(connectionString: "MsSqlConnectionString"));
+            //            if (!isExisted)
+            //            {
 
-            //        //var arc = SqlManager.ExecuteNonQuery(updateJobHistorySql, null, new MsSqlConnection(connectionString: "MsSqlConnectionString"));
+            //                var str = SqlManager.ExecuteScalar("select dbo.rtf2txt2(Je_ConfirmText) as DetailsOfJobDone from Job_History where Je_CallSign=@CallSign and Je_L1=@L1 and Je_L2=@L2 and Je_L3=@L3 and Je_L4=@L4 and Je_JobCode=@JobCode and Je_JobNo=@JobNo",
+            //                        new Dictionary<string, object>()
+            //                        {
+            //                                            { "CallSign",item["Je_CallSign"]},
+            //                                            { "L1",item["Je_L1"]},
+            //                                            { "L2",item["Je_L2"]},
+            //                                            { "L3",item["Je_L3"]},
+            //                                            { "L4",item["Je_L4"]},
+            //                                            { "JobCode",item["Je_JobCode"]},
+            //                                            { "JobNo",item["Je_JobNo"]},
+            //                        },
+            //                        new MsSqlConnection(connectionString: "MsSqlConnectionString"));
 
-            //        //Console.WriteLine($"{arc > 0}");
+            //                Console.WriteLine($"{item["Je_CallSign"]}-{item["Je_L1"]}-{ item["Je_L2"]}-{ item["Je_L3"]}-{ item["Je_L4"]}-{ item["Je_JobCode"]}-{item["Je_JobNo"]}");
+            //                Console.WriteLine($"Str : {str}");
+
+            //                var isInserted = SqlManager.ExecuteNonQuery("insert into Job_History_DetailsOfJobDone(CallSign,L1,L2,L3,L4,JobCode,JobNo,RichText,PlainText) values (@CallSign,@L1,@L2,@L3,@L4,@JobCode,@JobNo,@RichText,@PlainText)",
+            //                    new Dictionary<string, object>()
+            //                    {
+            //                    { "CallSign",item["Je_CallSign"]},
+            //                    { "L1",item["Je_L1"]},
+            //                    { "L2",item["Je_L2"]},
+            //                    { "L3",item["Je_L3"]},
+            //                    { "L4",item["Je_L4"]},
+            //                    { "JobCode",item["Je_JobCode"]},
+            //                    { "JobNo",item["Je_JobNo"]},
+            //                    { "RichText",item["Je_ConfirmText"]},
+            //                    { "PlainText",str},
+            //                    },
+            //                    new MsSqlConnection(connectionString: "MsSqlConnectionString")) > 0;
+
+            //                if (!isInserted)
+            //                    Console.WriteLine(isInserted);
+            //            }
+            //        }
+            //        catch (Exception ex)
+            //        {
+            //            Console.WriteLine(ex.Message);
+            //        }
             //    });
 
-            //    Shippernetix.Job_History.ReCalculateLastJob(new MsSqlConnection(connectionString: "MsSqlConnectionString"), callSign: jhCallSign, l1: jhL1.ToString(), l2: jhL2.ToString(), l3: jhL3.ToString(), l4: jhL4.ToString(), jobCode: jhJobCode, actionToWorkWithLastCompletedJob: action);
+            //    tList.Add(t);
 
-            //    Console.WriteLine(i);
+            //    t.Start();
             //}
-            ////Evrim Bey İstek End
 
-
-            //ExecuteNonQueryOn(new MsSqlConnection(connectionString: "9VRT"), "delete from Approval where A_CallSign='9VRT' and A_L1='4' and A_L2='7' and A_L3='10' and A_L4='1'");
-            //FixSpares("9BRV", "5", "1", "0", new MsSqlConnection(connectionString: "9BRV"), new MsSqlConnection(connectionString: "MsSqlConnectionString"), false);
-            //Shippernetix.Job_History.Fix("9VRT", "4","7","10","1", "A", "2", new MsSqlConnection(connectionString: "MsSqlConnectionString"), new MsSqlConnection(connectionString: "9VRT"), true);
-            //Shippernetix.Job_History.Fix("9HLN", "4", "1", "4", "1", "A", "1", new MsSqlConnection(connectionString: "9HLN"), new MsSqlConnection(connectionString: "MsSqlConnectionString"), true);
-            //Shippernetix.Job_History.FixFromOfficeToVessel("9PTY", "6", "1", "7", "4", "B", "1");
-            //Shippernetix.Job_History.FixFromVesselToOffice("9PRD", "16", "1", "1", "1", "A", "14");
-            //Shippernetix.Job_History.FixFromOfficeToVessel("9BRV", "2", "3", "1", "1", "B", "8");
-
-            //Shippernetix.Job_History.FixFromOfficeToVessel("9HA2", "4", "3", "1", "4", "C", "4");
-            //Shippernetix.Job_History.FixFromOfficeToVessel("9RYL", "2", "3", "9", "3", "D", "1");
-            //Shippernetix.Job_History.FixFromOfficeToVessel("9RYL", "5", "2", "6", "1", "Def-1063", "1");
-            //Shippernetix.Job_History.FixFromOfficeToVessel("9RYL", "5", "8", "1", "1", "Def-1062", "1");
-            //Shippernetix.Job_History.FixFromOfficeToVessel("9RYL", "10", "2", "1", "1", "Def-867", "1");
-            //Shippernetix.Job_History.FixFromOfficeToVessel("9RYL", "10", "2", "1", "1", "Def-871", "1");
-            //Shippernetix.Job_History.FixFromOfficeToVessel("9RYL", "13", "1", "10", "3", "Def-1036", "1");
-            //Shippernetix.Job_History.FixFromOfficeToVessel("9RYL", "14", "6", "1", "8", "D", "1");
-            //Shippernetix.Job_History.FixFromOfficeToVessel("9RYL", "14", "6", "1", "8", "E", "1");
-            // Shippernetix.Job_History.FixFromOfficeToVessel("9BRV", "2", "3", "9", "2", "A", "21");
-            //Shippernetix.Job_History.FixFromOfficeToVessel("9REF", "3", "6", "6", "1", "Def-1130", "1");
-
-            ////NO.1 CYL.  01.01.13.07 - A / 21.01.2022  tarihinde yapılmıştır.
-            ////NO.2 CYL.  01.01.13.08 - A / 22.01 2022  tarihinde yapılmıştır.
-            ////NO.4 CYL.  01.01.13.10 - A / 26.01.2022  tarihinde yapılmıştır.
-            ////NO.5 CYL.  01.01.13.11 - A / 22.01 2022  tarihinde yapılmıştır.
-            ////NO.6 CYL.  01.01.13.12 - A / 26.01.2022  tarihinde yapılmıştır.
-
-            //Shippernetix.Job_History.ReCalculateLastJob(new MsSqlConnection(connectionString: "MsSqlConnectionString"), callSign: "9HLN", "1", "1", "13", "7", "A", "2022-01-21 00:00:00.000");
-
-            //Shippernetix.Job_History.ReCalculateLastJob(new MsSqlConnection(connectionString: "MsSqlConnectionString"), callSign: "9HLN", "1", "1", "13", "8", "A", "2022-01-22 00:00:00.000");
-
-            //Shippernetix.Job_History.ReCalculateLastJob(new MsSqlConnection(connectionString: "MsSqlConnectionString"), callSign: "9HLN", "1", "1", "13", "10", "A", "2022-01-26 00:00:00.000");
-
-            //Shippernetix.Job_History.ReCalculateLastJob(new MsSqlConnection(connectionString: "MsSqlConnectionString"), callSign: "9HLN", "1", "1", "13", "11", "A", "2022-01-22 00:00:00.000");
-
-            //Shippernetix.Job_History.ReCalculateLastJob(new MsSqlConnection(connectionString: "MsSqlConnectionString"), callSign: "9HA2", "1", "1", "13", "12", "A", "2022-01-26 00:00:00.000");
-
-
-            //Defect.FixFromOfficeToVessel("9HNK","Def-");
-
-            //Shippernetix.Job_History.FixFromOfficeToVessel("9BUD", "5", "8", "6", "1", "Def-1968", "1");
-            //Shippernetix.Job_History.FixFromOfficeToVessel("9BUD", "5", "8", "6", "1", "Def-2958", "1");
-            //Shippernetix.Job_History.FixFromOfficeToVessel("9BUD", "5", "10", "1", "2", "Def-2962", "1");
-
-            //Defect.FixFromOfficeToVessel("9REF", "Def-1130");
+            //Task.WaitAll(tList.ToArray());
 
             Console.WriteLine("");
-            //Shippernetix.Defect.FixDefectsIsHiddenStatus("9HLN",new MsSqlConnection(connectionString: "MsSqlConnectionString"),new MsSqlConnection(connectionString: "9HLN"));
-
-            //Shippernetix.Job_History.ReCalculateLastJob(new MsSqlConnection("MsSqlConnectionString"),"9VRT","3","3","7","1","A");
-
-            //Console.ReadLine();
-
-            /////10000001//
-            //var q101 = "select z.* from(select y.*,(select max(jh.Je_JobNo) from Job_History jh where jh.Je_CallSign = y.Je_CallSign " +
-            //    "and jh.Je_L1 = y.Je_L1 " +
-            //    "and jh.Je_L2 = y.Je_L2 " +
-            //    "and jh.Je_L3 = y.Je_L3 " +
-            //    "and jh.Je_L4 = y.Je_L4 " +
-            //    "and jh.Je_JobCode = y.Je_JobCode) as MaxJobNumber " +
-            //    "from(select Name, Je_CallSign, Je_L1, Je_L2, Je_L3, Je_L4, Je_JobCode, Je_JobNo, Je_Status " +
-            //    "from(select vm.Name, jh1.* from Job_History jh1 right join Vessel_Master vm on vm.CallSign = jh1.Je_CallSign and vm.Active = 1)x " +
-            //    "group by Name, Je_CallSign, Je_L1, Je_L2, Je_L3, Je_L4, Je_JobCode, Je_JobNo, Je_Status)y)z " +
-            //               " where Je_JobNo = MaxJobNumber and Je_JobNo<>1 and Je_Status = 'COMPLETED' and Je_JobCode not like '%Def%'";
-
-            //var list = SqlManager.ExecuteQuery(q101);
-
-            //var updateQuery1 = "update Job_History set Je_Status = 'NEXT JOB' where Je_CallSign=@CallSign and Je_L1=@L1 and  Je_L2=@L2 and Je_L3=@L3 and Je_L4=@L4 and Je_JobCode=@JobCode and Je_JobNo=@JobNo";
-            //var updateQuery2 = "update Job_History set Je_Status = 'COMPLETED' where Je_CallSign=@CallSign and Je_L1=@L1 and  Je_L2=@L2 and Je_L3=@L3 and Je_L4=@L4 and Je_JobCode=@JobCode and Je_JobNo=@JobNo";
-
-
-            //var isUpdated = false;
-
-            //try
-            //{
-            //    foreach (var item in list)
-            //    {
-            //        var jobHistory = new
-            //        {
-            //            CallSign = item["Je_CallSign"].ToString(),
-            //            L1 = item["Je_L1"].ToString(),
-            //            L2 = item["Je_L2"].ToString(),
-            //            L3 = item["Je_L3"].ToString(),
-            //            L4 = item["Je_L4"].ToString(),
-            //            JobCode = item["Je_JobCode"].ToString(),
-            //            JobNo = item["Je_JobNo"].ToString(),
-            //        };
-
-            //        var connection1 = new MsSqlConnection();
-
-            //        isUpdated = SqlManager.ExecuteNonQuery(updateQuery1, new Dictionary<string, object>()
-            //            {
-            //                {"CallSign",jobHistory.CallSign },
-            //                {"L1",jobHistory.L1},
-            //                {"L2",jobHistory.L2  },
-            //                {"L3",jobHistory.L3  },
-            //                {"L4",jobHistory.L4  },
-            //                {"JobCode",jobHistory.JobCode  },
-            //                {"JobNo",jobHistory.JobNo }
-            //            }, connection1) > 0;
-
-            //        var connection2 = new MsSqlConnection();
-
-            //        if (isUpdated)
-            //        {
-            //            isUpdated = SqlManager.ExecuteNonQuery(updateQuery2, new Dictionary<string, object>()
-            //                {
-            //                    {"CallSign",jobHistory.CallSign },
-            //                    {"L1",jobHistory.L1},
-            //                    {"L2",jobHistory.L2  },
-            //                    {"L3",jobHistory.L3  },
-            //                    {"L4",jobHistory.L4  },
-            //                    {"JobCode",jobHistory.JobCode  },
-            //                    {"JobNo",jobHistory.JobNo }
-            //                }, connection2) > 0;
-            //        }
-            //        else
-            //        {
-            //            throw new Exception("Error");
-            //        }
-            //    }
-            //}
-            //catch(Exception ex)
-            //{
-            //    Console.WriteLine(ex);
-            //}
-            /////10000001//
-            
 
 
             foreach (var vessel in Vessel_Master.Vessels)
@@ -567,6 +473,12 @@ namespace Synchronizer
                     },
                     {
                         "9ANT",config.GetConnectionString("9ANT")
+                    },
+                    {
+                        "9ALF",config.GetConnectionString("9ALF")
+                    },
+                    {
+                        "9ALV",config.GetConnectionString("9ALV")
                     }
                 };
             });
