@@ -21,7 +21,7 @@ namespace CsvReaderToMigrate
                     },
                 };
             });
-
+            
 
             var connection = new MsSqlConnection(connectionString: "MsSqlConnectionString");
 
@@ -29,7 +29,8 @@ namespace CsvReaderToMigrate
             if (!SqlManager.CheckConnection(connection))
                 throw new Exception("Db Connection Problem Occured");
 
-
+            //var structures = GetStructuresByVessel("9ALV", "ALL", "ALL", "ALL", "ALL", connection);
+            //CloneStructureTo(structures, "9ALF", connection, true);
 
             //var structures = GetStructuresByVessel("9HM2", "16", "ALL", "ALL","ALL", connection);
             //CloneStructureTo(structures, "9ANT", connection,true);
@@ -51,29 +52,78 @@ namespace CsvReaderToMigrate
             try
             {
 
-                CloneStructureTo(structures: new List<Structure>()
-                {
-                    new Structure("9HM2","14","6","1","6")
-                },
-                ToCallSign: "9RYL",
-                connection: connection,
-                cloneJobDefinitions: true);
+                //var sql = "select m.Name,jd.Jd_CallSign,jd.Jd_L1,jd.Jd_L2,jd.Jd_L3,jd.Jd_L4,jd.Jd_JobCode,jd.Jd_JobType,jd.Jd_JobTitle,jd.Jd_Desc,Jd_IntType,Jd_Int,Jd_RuntimeSourceCode,Jd_DepCode from Job_Definition jd left join Vessel_Master m on jd.Jd_CallSign=m.CallSign where jd.Jd_CallSign='9VLE'";
 
-                CloneStructureTo(structures: new List<Structure>()
-                {
-                    new Structure("9HM2","14","6","1","6")
-                },
-                ToCallSign: "9BRV",
-                connection: connection,
-                cloneJobDefinitions: true);
+                //var rowsOfValueDescriptions = SqlManager.ExecuteQuery(sql: sql, connection: connection);
 
-                CloneStructureTo(structures: new List<Structure>()
-                {
-                    new Structure("9HM2","14","6","1","6")
-                },
-                ToCallSign: "9HNK",
-                connection: connection,
-                cloneJobDefinitions: true);
+                //var counter = rowsOfValueDescriptions.Count;
+
+                //foreach (var row in rowsOfValueDescriptions)
+                //{
+                //    try
+                //    {
+                //        Console.WriteLine($"{row["Jd_CallSign"]}-{ row["Jd_L1"] }-{row["Jd_L2"]}-{row["Jd_L3"]}-{row["Jd_L4"]}-{row["Jd_JobCode"] }");
+
+                //        var inserted = SqlManager.ExecuteNonQuery(sql: "insert into TEMP_VALUE_JOB_DESC select '"+ row["Name"] + "',Jd_CallSign,Jd_L1,Jd_L2,Jd_L3,Jd_L4,Jd_JobCode,Jd_JobType,Jd_JobTitle,Jd_Desc,dbo.rtf2txt2(Jd_Desc) as RtxToPlain,Jd_IntType,Jd_Int,Jd_RuntimeSourceCode,Jd_DepCode from Job_Definition where Jd_CallSign=@Jd_CallSign and Jd_L1=@Jd_L1 and Jd_L2=@Jd_L2 and Jd_L3=@Jd_L3 and Jd_L4=@Jd_L4 and Jd_JobCode=@Jd_JobCode", 
+                //            parameters:new Dictionary<string, object>() 
+                //            {
+                //                {"Jd_CallSign",row["Jd_CallSign"]},
+                //                {"Jd_L1",row["Jd_L1"] },
+                //                {"Jd_L2", row["Jd_L2"]},
+                //                {"Jd_L3", row["Jd_L3"]},
+                //                {"Jd_L4", row["Jd_L4"]},
+                //                {"Jd_JobCode", row["Jd_JobCode"] }
+                //            },connection: connection);
+
+                //        if (inserted != 1)
+                //        {
+                //            inserted = SqlManager.ExecuteNonQuery(sql: "insert into TEMP_VALUE_JOB_DESC select '" + row["Name"] + "',Jd_CallSign,Jd_L1,Jd_L2,Jd_L3,Jd_L4,Jd_JobCode,Jd_JobType,Jd_JobTitle,Jd_Desc,null as RtxToPlain,Jd_IntType,Jd_Int,Jd_RuntimeSourceCode,Jd_DepCode from Job_Definition where Jd_CallSign=@Jd_CallSign and Jd_L1=@Jd_L1 and Jd_L2=@Jd_L2 and Jd_L3=@Jd_L3 and Jd_L4=@Jd_L4 and Jd_JobCode=@Jd_JobCode",
+                //            parameters: new Dictionary<string, object>()
+                //            {
+                //                {"Jd_CallSign",row["Jd_CallSign"]},
+                //                {"Jd_L1",row["Jd_L1"] },
+                //                {"Jd_L2", row["Jd_L2"]},
+                //                {"Jd_L3", row["Jd_L3"]},
+                //                {"Jd_L4", row["Jd_L4"]},
+                //                {"Jd_JobCode", row["Jd_JobCode"] }
+                //            }, connection: connection);
+                //        }
+
+                //    }
+                //    catch (Exception ex)
+                //    {
+
+                //    }
+
+                //    Console.WriteLine("Counter : " + counter--);
+                //}
+
+
+
+
+                //CloneStructureTo(structures: new List<Structure>()
+                //{
+                //    new Structure("9PRK","5","3","2","1")
+                //},
+                //ToCallSign: "9PRT",
+                //connection: connection,
+                //cloneJobDefinitions: true);
+
+                //CloneStructureTo(structures: new List<Structure>()
+                //{
+                //    new Structure("9HM2","14","6","1","6")
+                //},
+                //ToCallSign: "9BRV",
+                //connection: connection,
+                //cloneJobDefinitions: true);
+
+                //CloneStructureTo(structures: new List<Structure>()
+                //{
+                //    new Structure("9HM2","14","6","1","6")
+                //},
+                //ToCallSign: "9HNK",
+                //connection: connection,
+                //cloneJobDefinitions: true);
 
 
                 //foreach (var toCallSign in new string[] { "9PRD", "9PRT", "9HA2", "9HLN", "9HN2", "9HNK", "9VLE","9VRT","9HA4","9BUD" })
@@ -137,11 +187,13 @@ namespace CsvReaderToMigrate
                 //}
 
 
-                var newVesselCallSign = "9ANT";
+                var newVesselCallSign = "9VRD";
 
                 var vesselCallSignToReplace = "9PWR";
 
-                var path = CustomFile.CombinePaths(CustomFile.CurrentUserDesktopPath, "ANTONIS.csv");
+                //var path = CustomFile.CombinePaths(CustomFile.CurrentUserDesktopPath, "ANTONIS.csv");
+                //VLCCDF.csv
+                var path = CustomFile.CombinePaths(CustomFile.CurrentUserDesktopPath, "VLCCDF.csv");
 
                 var file = new Dsv(path: path);
 
@@ -168,184 +220,187 @@ namespace CsvReaderToMigrate
                     var l4 = trimAction(columns[4]);
                     var code = trimAction(columns[5]);
 
-                    for (int i = 1; i < 5; i++)
-                    {
-                        if (i == 1)
-                        {
-                            parameters.Add("En_CallSign", callSign);
-                            parameters.Add("En_L1", l1);
-                            parameters.Add("En_L2", 0);
-                            parameters.Add("En_L3", 0);
-                            parameters.Add("En_L4", 0);
+                    var structures = GetStructuresByVessel(callSign, l1, l2, l3, l4, connection);
+                    CloneStructureTo(structures, newVesselCallSign, connection, true);
 
-                            CloneStructureTo(callSign, newVesselCallSign, connection, parameters);
-                            parameters.Clear();
-                        }
-                        else if (i == 2)
-                        {
-                            if (l2.ToLower() == "ALL".ToLower())
-                            {
-                                var selectOtherLColumns = "select En_L2 as L2,En_L3 as L3,En_L4 as L4 from Structure where En_CallSign=@CallSign and En_L1=@L1";
+                    //for (int i = 1; i < 5; i++)
+                    //{
+                    //    if (i == 1)
+                    //    {
+                    //        parameters.Add("En_CallSign", callSign);
+                    //        parameters.Add("En_L1", l1);
+                    //        parameters.Add("En_L2", 0);
+                    //        parameters.Add("En_L3", 0);
+                    //        parameters.Add("En_L4", 0);
 
-                                var collection = SqlManager.ExecuteQuery(sql: selectOtherLColumns, new Dictionary<string, object>()
-                                {
-                                    {"CallSign",vesselCallSignToReplace },
-                                    {"L1",l1 }
-                                });
+                    //        CloneStructureTo(callSign, newVesselCallSign, connection, parameters);
+                    //        parameters.Clear();
+                    //    }
+                    //    else if (i == 2)
+                    //    {
+                    //        if (l2.ToLower() == "ALL".ToLower())
+                    //        {
+                    //            var selectOtherLColumns = "select En_L2 as L2,En_L3 as L3,En_L4 as L4 from Structure where En_CallSign=@CallSign and En_L1=@L1";
 
-                                foreach (var item in collection)
-                                {
-                                    var _l2 = item["L2"].ToString();
-                                    var _l3 = item["L3"].ToString();
-                                    var _l4 = item["L4"].ToString();
+                    //            var collection = SqlManager.ExecuteQuery(sql: selectOtherLColumns, new Dictionary<string, object>()
+                    //            {
+                    //                {"CallSign",vesselCallSignToReplace },
+                    //                {"L1",l1 }
+                    //            });
 
-                                    //if (_l2=="0" && _l3 == "0" && _l4 == "0")
-                                    //    continue;
+                    //            foreach (var item in collection)
+                    //            {
+                    //                var _l2 = item["L2"].ToString();
+                    //                var _l3 = item["L3"].ToString();
+                    //                var _l4 = item["L4"].ToString();
 
-                                    parameters.Add("En_CallSign", vesselCallSignToReplace);
-                                    parameters.Add("En_L1", l1);
-                                    parameters.Add("En_L2", _l2);
-                                    parameters.Add("En_L3", _l3);
-                                    parameters.Add("En_L4", _l4);
+                    //                //if (_l2=="0" && _l3 == "0" && _l4 == "0")
+                    //                //    continue;
 
-                                    CloneStructureTo(vesselCallSignToReplace, newVesselCallSign, connection, parameters);
-                                    parameters.Clear();
-                                }
-                            }
-                            else
-                            {
-                                parameters.Add("En_CallSign", callSign);
-                                parameters.Add("En_L1", l1);
-                                parameters.Add("En_L2", l2);
-                                parameters.Add("En_L3", 0);
-                                parameters.Add("En_L4", 0);
+                    //                parameters.Add("En_CallSign", vesselCallSignToReplace);
+                    //                parameters.Add("En_L1", l1);
+                    //                parameters.Add("En_L2", _l2);
+                    //                parameters.Add("En_L3", _l3);
+                    //                parameters.Add("En_L4", _l4);
 
-                                CloneStructureTo(callSign, newVesselCallSign, connection, parameters);
-                                parameters.Clear();
-                            }
-                        }
-                        else if (i == 3)
-                        {
-                            if (l3.ToLower() == "ALL".ToLower())
-                            {
-                                var selectOtherLColumns = "select En_L3 as L3,En_L4 as L4 from Structure where En_CallSign=@CallSign and En_L1=@L1 and En_L2=@L2";
+                    //                CloneStructureTo(vesselCallSignToReplace, newVesselCallSign, connection, parameters);
+                    //                parameters.Clear();
+                    //            }
+                    //        }
+                    //        else
+                    //        {
+                    //            parameters.Add("En_CallSign", callSign);
+                    //            parameters.Add("En_L1", l1);
+                    //            parameters.Add("En_L2", l2);
+                    //            parameters.Add("En_L3", 0);
+                    //            parameters.Add("En_L4", 0);
 
-                                var collection = SqlManager.ExecuteQuery(sql: selectOtherLColumns, new Dictionary<string, object>()
-                                {
-                                    {"CallSign",vesselCallSignToReplace },
-                                    {"L1",l1 },
-                                    {"L2",l2 }
-                                });
+                    //            CloneStructureTo(callSign, newVesselCallSign, connection, parameters);
+                    //            parameters.Clear();
+                    //        }
+                    //    }
+                    //    else if (i == 3)
+                    //    {
+                    //        if (l3.ToLower() == "ALL".ToLower())
+                    //        {
+                    //            var selectOtherLColumns = "select En_L3 as L3,En_L4 as L4 from Structure where En_CallSign=@CallSign and En_L1=@L1 and En_L2=@L2";
 
-                                foreach (var item in collection)
-                                {
-                                    var _l3 = item["L3"].ToString();
-                                    var _l4 = item["L4"].ToString();
+                    //            var collection = SqlManager.ExecuteQuery(sql: selectOtherLColumns, new Dictionary<string, object>()
+                    //            {
+                    //                {"CallSign",vesselCallSignToReplace },
+                    //                {"L1",l1 },
+                    //                {"L2",l2 }
+                    //            });
 
-                                    //if (_l3 == "0" && _l4 == "0")
-                                    //    continue;
+                    //            foreach (var item in collection)
+                    //            {
+                    //                var _l3 = item["L3"].ToString();
+                    //                var _l4 = item["L4"].ToString();
 
-                                    parameters.Add("En_CallSign", vesselCallSignToReplace);
-                                    parameters.Add("En_L1", l1);
-                                    parameters.Add("En_L2", l2);
-                                    parameters.Add("En_L3", _l3);
-                                    parameters.Add("En_L4", _l4);
+                    //                //if (_l3 == "0" && _l4 == "0")
+                    //                //    continue;
 
-                                    CloneStructureTo(vesselCallSignToReplace, newVesselCallSign, connection, parameters);
-                                    parameters.Clear();
-                                }
-                            }
-                            else
-                            {
-                                parameters.Add("En_CallSign", callSign);
-                                parameters.Add("En_L1", l1);
-                                parameters.Add("En_L2", l2);
-                                parameters.Add("En_L3", l3);
-                                parameters.Add("En_L4", 0);
+                    //                parameters.Add("En_CallSign", vesselCallSignToReplace);
+                    //                parameters.Add("En_L1", l1);
+                    //                parameters.Add("En_L2", l2);
+                    //                parameters.Add("En_L3", _l3);
+                    //                parameters.Add("En_L4", _l4);
 
-                                CloneStructureTo(callSign, newVesselCallSign, connection, parameters);
-                                parameters.Clear();
-                            }
-                        }
-                        else if (i == 4)
-                        {
-                            if (l4.ToLower() == "ALL".ToLower())
-                            {
-                                var selectOtherLColumns = "select En_L4 as L4 from Structure where En_CallSign=@CallSign and En_L1=@L1 and En_L2=@L2 and En_L3=@L3";
+                    //                CloneStructureTo(vesselCallSignToReplace, newVesselCallSign, connection, parameters);
+                    //                parameters.Clear();
+                    //            }
+                    //        }
+                    //        else
+                    //        {
+                    //            parameters.Add("En_CallSign", callSign);
+                    //            parameters.Add("En_L1", l1);
+                    //            parameters.Add("En_L2", l2);
+                    //            parameters.Add("En_L3", l3);
+                    //            parameters.Add("En_L4", 0);
 
-                                var collection = SqlManager.ExecuteQuery(sql: selectOtherLColumns, new Dictionary<string, object>()
-                                {
-                                    {"CallSign",vesselCallSignToReplace },
-                                    {"L1",l1 },
-                                    {"L2",l2 },
-                                    {"L3",l3 }
-                                });
+                    //            CloneStructureTo(callSign, newVesselCallSign, connection, parameters);
+                    //            parameters.Clear();
+                    //        }
+                    //    }
+                    //    else if (i == 4)
+                    //    {
+                    //        if (l4.ToLower() == "ALL".ToLower())
+                    //        {
+                    //            var selectOtherLColumns = "select En_L4 as L4 from Structure where En_CallSign=@CallSign and En_L1=@L1 and En_L2=@L2 and En_L3=@L3";
 
-                                foreach (var item in collection)
-                                {
-                                    var _l4 = item["L4"].ToString();
+                    //            var collection = SqlManager.ExecuteQuery(sql: selectOtherLColumns, new Dictionary<string, object>()
+                    //            {
+                    //                {"CallSign",vesselCallSignToReplace },
+                    //                {"L1",l1 },
+                    //                {"L2",l2 },
+                    //                {"L3",l3 }
+                    //            });
 
-                                    //if (_l4 == "0")
-                                    //    continue;
+                    //            foreach (var item in collection)
+                    //            {
+                    //                var _l4 = item["L4"].ToString();
 
-                                    parameters.Add("En_CallSign", vesselCallSignToReplace);
-                                    parameters.Add("En_L1", l1);
-                                    parameters.Add("En_L2", l2);
-                                    parameters.Add("En_L3", l3);
-                                    parameters.Add("En_L4", _l4);
+                    //                //if (_l4 == "0")
+                    //                //    continue;
 
-                                    CloneStructureTo(vesselCallSignToReplace, newVesselCallSign, connection, parameters);
-                                    parameters.Clear();
-                                }
-                            }
-                            else
-                            {
-                                parameters.Add("En_CallSign", callSign);
-                                parameters.Add("En_L1", l1);
-                                parameters.Add("En_L2", l2);
-                                parameters.Add("En_L3", l3);
-                                parameters.Add("En_L4", l4);
+                    //                parameters.Add("En_CallSign", vesselCallSignToReplace);
+                    //                parameters.Add("En_L1", l1);
+                    //                parameters.Add("En_L2", l2);
+                    //                parameters.Add("En_L3", l3);
+                    //                parameters.Add("En_L4", _l4);
 
-                                CloneStructureTo(callSign, newVesselCallSign, connection, parameters);
-                                parameters.Clear();
-                            }
-                        }
-                    }
+                    //                CloneStructureTo(vesselCallSignToReplace, newVesselCallSign, connection, parameters);
+                    //                parameters.Clear();
+                    //            }
+                    //        }
+                    //        else
+                    //        {
+                    //            parameters.Add("En_CallSign", callSign);
+                    //            parameters.Add("En_L1", l1);
+                    //            parameters.Add("En_L2", l2);
+                    //            parameters.Add("En_L3", l3);
+                    //            parameters.Add("En_L4", l4);
+
+                    //            CloneStructureTo(callSign, newVesselCallSign, connection, parameters);
+                    //            parameters.Clear();
+                    //        }
+                    //    }
+                    //}
                 }
 
-                var allJobDefinitionFromSampleVesselSql = "select Jd_L1 as L1,Jd_L2 as L2,Jd_L3 as L3,Jd_L4 as L4,Jd_JobCode as Code " +
-                                    "from Job_Definition " +
-                                    "where Jd_CallSign = @CallSign and Jd_JobType='PLM'";
+                //var allJobDefinitionFromSampleVesselSql = "select Jd_L1 as L1,Jd_L2 as L2,Jd_L3 as L3,Jd_L4 as L4,Jd_JobCode as Code " +
+                //                    "from Job_Definition " +
+                //                    "where Jd_CallSign = @CallSign and Jd_JobType='PLM'";
 
-                var jobDefinitionsFromSampleVessel = SqlManager.ExecuteQuery(allJobDefinitionFromSampleVesselSql, new Dictionary<string, object>()
-                    {
-                        {"CallSign",vesselCallSignToReplace }
-                    }, connection);
+                //var jobDefinitionsFromSampleVessel = SqlManager.ExecuteQuery(allJobDefinitionFromSampleVesselSql, new Dictionary<string, object>()
+                //    {
+                //        {"CallSign",vesselCallSignToReplace }
+                //    }, connection);
 
-                foreach (var jd in jobDefinitionsFromSampleVessel)
-                {
-                    parameters.Clear();
-                    parameters.Add("Jd_CallSign", vesselCallSignToReplace);
-                    parameters.Add("Jd_L1", jd["L1"]);
-                    parameters.Add("Jd_L2", jd["L2"]);
-                    parameters.Add("Jd_L3", jd["L3"]);
-                    parameters.Add("Jd_L4", jd["L4"]);
-                    parameters.Add("Jd_JobCode", jd["Code"]);
+                //foreach (var jd in jobDefinitionsFromSampleVessel)
+                //{
+                //    parameters.Clear();
+                //    parameters.Add("Jd_CallSign", vesselCallSignToReplace);
+                //    parameters.Add("Jd_L1", jd["L1"]);
+                //    parameters.Add("Jd_L2", jd["L2"]);
+                //    parameters.Add("Jd_L3", jd["L3"]);
+                //    parameters.Add("Jd_L4", jd["L4"]);
+                //    parameters.Add("Jd_JobCode", jd["Code"]);
 
-                    if(SqlManager.Any("select  * from Structure where En_CallSign=@CallSign and En_L1=@L1 and En_L2=@L2 and En_L3=@L3 and En_L4=@L4",new Dictionary<string, object>() 
-                    {
-                        {"CallSign", newVesselCallSign},
-                        {"L1", jd["L1"]},
-                        {"L2", jd["L2"]},
-                        {"L3", jd["L3"]},
-                        {"L4", jd["L4"]},
-                    }))
-                    {
-                        var shippernetixId = $"{vesselCallSignToReplace}-{jd["L1"]}-{jd["L2"]}-{jd["L3"]}-{jd["L4"]}-{jd["Code"]}";
+                //    if(SqlManager.Any("select  * from Structure where En_CallSign=@CallSign and En_L1=@L1 and En_L2=@L2 and En_L3=@L3 and En_L4=@L4",new Dictionary<string, object>() 
+                //    {
+                //        {"CallSign", newVesselCallSign},
+                //        {"L1", jd["L1"]},
+                //        {"L2", jd["L2"]},
+                //        {"L3", jd["L3"]},
+                //        {"L4", jd["L4"]},
+                //    }))
+                //    {
+                //        var shippernetixId = $"{vesselCallSignToReplace}-{jd["L1"]}-{jd["L2"]}-{jd["L3"]}-{jd["L4"]}-{jd["Code"]}";
 
-                        CloneJobDefinitionTo(vesselCallSignToReplace, newVesselCallSign, connection, parameters);
-                    }
-                }
+                //        CloneJobDefinitionTo(vesselCallSignToReplace, newVesselCallSign, connection, parameters);
+                //    }
+                //}
             }
             catch (Exception ex)
             {
@@ -439,15 +494,71 @@ namespace CsvReaderToMigrate
                     En_L4 = r["En_L4"].ToString()
                 }).ToList();
 
-            if (!structures.Any(s => IsNotNull(s.En_L1) && s.En_L2 == "0" && s.En_L3 == "0" && s.En_L4 == "0"))
-                structures.Add(new Structure()
+
+            List<Structure> missingStructures = new List<Structure>();
+
+            if (IsNotNull(l1))
+            {
+                var list = SqlManager.ExecuteQuery(query, parameters, connection)
+                .Select(r => new Structure()
                 {
-                    En_CallSign = callSign,
-                    En_L1 = l1,
+                    En_CallSign = r["En_CallSign"].ToString(),
+                    En_L1 = r["En_L1"].ToString(),
                     En_L2 = "0",
                     En_L3 = "0",
                     En_L4 = "0"
                 });
+
+                missingStructures.AddRange(list);
+            }
+
+            if (IsNotNull(l2))
+            {
+                var list  = SqlManager.ExecuteQuery(query, parameters, connection)
+                  .Select(r => new Structure()
+                  {
+                      En_CallSign = r["En_CallSign"].ToString(),
+                      En_L1 = r["En_L1"].ToString(),
+                      En_L2 = r["En_L2"].ToString(),
+                      En_L3 = "0",
+                      En_L4 = "0"
+                  }).ToList();
+
+                missingStructures.AddRange(list);
+            }
+
+
+            if (IsNotNull(l3))
+            {
+                var list = SqlManager.ExecuteQuery(query, parameters, connection)
+                  .Select(r => new Structure()
+                  {
+                      En_CallSign = r["En_CallSign"].ToString(),
+                      En_L1 = r["En_L1"].ToString(),
+                      En_L2 = r["En_L2"].ToString(),
+                      En_L3 = r["En_L3"].ToString(),
+                      En_L4 = "0"
+                  }).ToList();
+
+                missingStructures.AddRange(list);
+            }
+
+            foreach (var missingStructure in missingStructures)
+            {
+                if (structures.Any(s=>s.En_CallSign==missingStructure.En_CallSign && s.En_L1==missingStructure.En_L1 && s.En_L2==missingStructure.En_L2 && s.En_L3==missingStructure.En_L3 && s.En_L4==missingStructure.En_L4))
+                    continue;
+
+                structures.Add(new Structure()
+                {
+                    En_CallSign = missingStructure.En_CallSign,
+                    En_L1 = missingStructure.En_L1,
+                    En_L2 = missingStructure.En_L2,
+                    En_L3 = missingStructure.En_L3,
+                    En_L4 = missingStructure.En_L4
+                });
+            }
+
+
 
             return structures;
         }

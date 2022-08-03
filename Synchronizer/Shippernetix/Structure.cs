@@ -10,7 +10,7 @@ namespace Synchronizer.Shippernetix
 {
     public class Structure : ShippernetixDynamicObject
     {
-        public Structure(string callSign, string l1, string l2, string l3, string l4, List<string> excludedColumnList, CustomConnection customConnection, bool prepareForVesselSide)
+        public Structure(CustomConnection customConnection,string callSign, string l1, string l2, string l3, string l4, List<string> excludedColumnList, bool prepareForVesselSide)
         {
             var parameters = new Dictionary<string, object>();
 
@@ -126,13 +126,13 @@ namespace Synchronizer.Shippernetix
 
                 foreach (var sourceDifference in sourceDifferences)
                 {
-                    var structure = new Structure(sourceDifference.En_CallSign.ToString(),
+                    var structure = new Structure(source.Connection, 
+                                                        sourceDifference.En_CallSign.ToString(),
                                                         sourceDifference.En_L1.ToString(),
                                                         sourceDifference.En_L2.ToString(),
                                                         sourceDifference.En_L3.ToString(),
                                                         sourceDifference.En_L4.ToString(),
                                                         sourceColumnListDifferentWithTarget,
-                                                        source.Connection,
                                                         source.PrepareForVesselSide);
 
                     var affectedRowsCount = SqlManager.ExecuteNonQuery(sql: structure.Table.GetInsertQueries, parameters: null, target.Connection);
@@ -160,13 +160,13 @@ namespace Synchronizer.Shippernetix
             {
                 foreach (var targetDifference in targetDifferences)
                 {
-                    var structure = new Structure(targetDifference.En_CallSign.ToString(),
+                    var structure = new Structure(target.Connection,
+                                targetDifference.En_CallSign.ToString(),
                                 targetDifference.En_L1.ToString(),
                                 targetDifference.En_L2.ToString(),
                                 targetDifference.En_L3.ToString(),
                                 targetDifference.En_L4.ToString(),
                                 targetColumnListDifferentWithSource,
-                                target.Connection,
                                 target.PrepareForVesselSide);
 
                     var affectedRowsCount = SqlManager.ExecuteNonQuery(sql: structure.Table.GetInsertQueries, parameters: null, source.Connection);

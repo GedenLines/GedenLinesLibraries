@@ -9,7 +9,7 @@ namespace Synchronizer.Shippernetix
 {
     public class Job_Definition : ShippernetixDynamicObject
     {
-        public Job_Definition(string callSign, string l1, string l2, string l3, string l4, string jobCode, CustomConnection customConnection, bool prepareForVesselSide)
+        public Job_Definition(CustomConnection customConnection,string callSign, string l1, string l2, string l3, string l4, string jobCode, bool prepareForVesselSide)
         {
             var parameters = new Dictionary<string, object>();
 
@@ -124,13 +124,13 @@ namespace Synchronizer.Shippernetix
 
                 foreach (var sourceDifference in sourceDifferences)
                 {
-                    var jobDefinition = new Job_Definition(sourceDifference.Jd_CallSign.ToString(),
+                    var jobDefinition = new Job_Definition(source.Connection, 
+                                                        sourceDifference.Jd_CallSign.ToString(),
                                                         sourceDifference.Jd_L1.ToString(),
                                                         sourceDifference.Jd_L2.ToString(),
                                                         sourceDifference.Jd_L3.ToString(),
                                                         sourceDifference.Jd_L4.ToString(),
                                                         sourceDifference.Jd_JobCode.ToString(),
-                                                        source.Connection,
                                                         source.PrepareForVesselSide);
 
                     var affectedRowsCount = SqlManager.ExecuteNonQuery(sql: jobDefinition.Table.GetInsertQueries, parameters: null, target.Connection);
@@ -158,13 +158,13 @@ namespace Synchronizer.Shippernetix
             {
                 foreach (var targetDifference in targetDifferences)
                 {
-                    var jobDefinition = new Job_Definition(targetDifference.Jd_CallSign.ToString(),
+                    var jobDefinition = new Job_Definition(target.Connection, 
+                                targetDifference.Jd_CallSign.ToString(),
                                 targetDifference.Jd_L1.ToString(),
                                 targetDifference.Jd_L2.ToString(),
                                 targetDifference.Jd_L3.ToString(),
                                 targetDifference.Jd_L4.ToString(),
                                 targetDifference.Jd_JobCode.ToString(),
-                                target.Connection,
                                 target.PrepareForVesselSide);
 
 
