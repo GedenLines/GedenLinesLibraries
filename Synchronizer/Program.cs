@@ -36,6 +36,8 @@ namespace Synchronizer
 
             Console.WriteLine();
 
+            //Job_History.ReCalculateLastJob(new MsSqlConnection(connectionString: "MsSqlConnectionString"), "9BRV","7","3","2","1","C",actionToWorkWithLastCompletedJob:null);
+            //Job_History.ReCalculateLastJob(new MsSqlConnection(connectionString: "MsSqlConnectionString"), "9BRV", "3", "19", "1", "1", "A", actionToWorkWithLastCompletedJob: null);
 
             //var q1000 = "select Je_CallSign,Je_L1,Je_L2,Je_L3,Je_L4,Je_JobCode,Je_JobNo,Je_ConfirmText from Job_History j right join Vessel_Master vm on vm.CallSign = j.Je_CallSign where vm.Active = 1 and j.Je_Status = 'COMPLETED' and(Je_CallSign + '-' + Je_L1 + '-' + Je_L2 + '-' + Je_L3 + '-' + Je_L4 + '-' + Je_JobCode + '-' + CONVERT(varchar(10), Je_JobNo)) not in (select(CallSign + '-' + L1 + '-' + L2 + '-' + L3 + '-' + L4 + '-' + JobCode + '-' + CONVERT(varchar(10), JobNo)) from Job_History_DetailsOfJobDone)";
 
@@ -120,7 +122,7 @@ namespace Synchronizer
 
             foreach (var vessel in Vessel_Master.Vessels)
             { 
-               if (vessel.CallSign != "9RYL")
+               if (vessel.CallSign != "9HA2")
                     continue;
 
                 var source = new Side("Office", "MsSqlConnectionString",true);
@@ -380,9 +382,9 @@ namespace Synchronizer
                 {
                     var onlyMail = false;
 
-                    Structure.Sync(source, target, vessel, onlyMail);
-                    Job_Definition.Sync(source, target, vessel, onlyMail);
-                    Defect.Sync(source, target, vessel, onlyMail);
+                    //Structure.Sync(source, target, vessel, onlyMail);
+                    //Job_Definition.Sync(source, target, vessel, onlyMail);
+                    //Defect.Sync(source, target, vessel, onlyMail);
                     Job_History.Sync(source, target, vessel, onlyMail);
                 }
                 else

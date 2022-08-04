@@ -544,14 +544,14 @@ namespace Synchronizer.Shippernetix
 
             var job_History = new Job_History(callSign,l1,l2,l3,l4,jobCode,jobNumber, sourceColumnListDifferentWithTarget,sourceConnection,prepareForVessel);
 
-            SqlManager.DisableTrigger("JHIS_ED_CC", "Job_History", targetConnection);
-            SqlManager.DisableTrigger("Job_History_Edit", "Job_History", targetConnection);
+            //SqlManager.DisableTrigger("JHIS_ED_CC", "Job_History", targetConnection);
+            //SqlManager.DisableTrigger("Job_History_Edit", "Job_History", targetConnection);
 
             var affectedRowsCount = SqlManager.ExecuteNonQuery(sql: job_History.Table.GetUpdateQueries, parameters: null, targetConnection);
             //var affectedRowsCount = SqlManager.ExecuteNonQuery(sql: job_History.Table.GetInsertQueries, parameters: null, targetConnection);
 
-            SqlManager.EnableTrigger("JHIS_ED_CC", "Job_History", targetConnection);
-            SqlManager.DisableTrigger("Job_History_Edit", "Job_History", targetConnection);
+            //SqlManager.EnableTrigger("JHIS_ED_CC", "Job_History", targetConnection);
+            //SqlManager.DisableTrigger("Job_History_Edit", "Job_History", targetConnection);
 
             Console.WriteLine($"{callSign}-{l1}-{l2}-{l3}-{l4}-{jobCode}-{jobNumber} fixing {affectedRowsCount}");
         }
