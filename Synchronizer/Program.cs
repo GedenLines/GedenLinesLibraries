@@ -291,7 +291,7 @@ namespace Synchronizer
             //}
             /////10000001//
             ///
-            Console.Write("For Syncronizer enter 1 \nFor Manuel DataPackage Mailer enter 2 \nFor Run Automat DataPackage Mailer Enter 3 \n");
+            Console.Write("For Synchronizer enter 1 \nFor Manuel DataPackage Mailer enter 2 \nFor Run Automat DataPackage Mailer Enter 3 \n");
             var status = int.Parse(Console.ReadLine());
             if (status == 1)
             {
