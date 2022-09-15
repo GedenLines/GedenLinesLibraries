@@ -186,6 +186,9 @@ namespace CsvReaderToMigrate
                 //    });
                 //}
 
+                var structures2 = GetStructuresByVessel("9VRD", "ALL", "ALL", "ALL", "ALL", connection);
+                CloneStructureTo(structures2, "9VCT", connection, true);
+
 
                 var newVesselCallSign = "9VRD";
 
@@ -441,7 +444,11 @@ namespace CsvReaderToMigrate
             parameters.Add("CallSign", callSign);
 
 
-            if (getL2All)
+            if (getL1All)
+            {
+
+            }
+            else if (getL2All)
             {
                 query = $"{query} and En_L1=@L1";
 
