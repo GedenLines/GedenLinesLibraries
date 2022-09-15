@@ -58,6 +58,64 @@ namespace Synchronizer
 
             Console.WriteLine();
 
+
+            //var sql1001 = "select ut1.Jd_CallSign,ut1.Jd_L1,ut1.Jd_L2,ut1.Jd_L3,ut1.Jd_L4,ut1.Jd_JobCode from Job_Definition ut1 "
+            //    + " inner join (select top(20)  v.IntType,x.Je_CallSign,x.Je_L1,x.Je_L2,x.Je_L3,x.Je_L4,x.Je_JobCode from(select(t.Je_L1 + '-' + t.Je_L2 + '-' + t.Je_L3 + '-' + t.Je_L4 + '-' + t.Je_JobCode + '-' + CONVERT(varchar, t.Je_JobNo)) as Id, t.* "
+            //    + " from Job_History t)x " 
+            //    +" left join ViewToGetVesselJobs v on x.Id = v.Id and x.Je_CallSign = v.CallSign "
+            //    + " where v.JobType='PLM' and  v.Status = 'NEXT JOB' and v.IsOverdue = 1 and IntType = 'MONTH')y "
+            //    + " on ut1.Jd_CallSign = y.Je_CallSign "
+            //  +" and ut1.Jd_L1 = y.Je_L1 "
+            //  +" and ut1.Jd_L2 = y.Je_L2 "
+            //  +" and ut1.Jd_L3 = y.Je_L3 "
+            //  +" and ut1.Jd_L4 = y.Je_L4 "
+            //  +" and ut1.Jd_JobCode = y.Je_JobCode";
+
+//            var sql1001 = "select  v.LastRuntime,v.IntType,x.Je_CallSign,x.Je_L1,x.Je_L2,x.Je_L3,x.Je_L4,x.Je_JobCode from(select (t.Je_L1+'-'+t.Je_L2+'-'+t.Je_L3+'-'+t.Je_L4+'-'+t.Je_JobCode+'-'+CONVERT(varchar,t.Je_JobNo)) as Id,t.*  from Job_History t)x "
+//+ " left join ViewToGetVesselJobs v on x.Id = v.Id and x.Je_CallSign = v.CallSign "
+// + " where v.JobType = 'PLM' and v.Status = 'NEXT JOB' and v.IsOverdue = 1 and v.IntType = 'COUNTER'";
+
+//            var connection = new MsSqlConnection(connectionString:"DECK");
+//            var bbb = SqlManager.CheckConnection(connection);
+
+            //15.08.2022
+            //var overdues = SqlManager.ExecuteQuery(sql: sql1001, connection: connection);
+
+            //foreach (var overdue in overdues)
+            //{
+            //    var jh = new 
+            //    {
+            //        CallSign = overdue["Je_CallSign"].ToString(),
+            //        L1 = overdue["Je_L1"].ToString(),
+            //        L2 = overdue["Je_L2"].ToString(),
+            //        L3 = overdue["Je_L3"].ToString(),
+            //        L4 = overdue["Je_L4"].ToString(),
+            //        JobCode = overdue["Je_JobCode"].ToString(),
+            //        LastRuntime = overdue["LastRuntime"].ToString()
+            //    };
+
+            //    //var updateSql = "update Job_Definition set Jd_PlanDate='2022-12-01 00:00:00.000' where Jd_CallSign=@CallSign and Jd_L1=@L1 and Jd_L2=@L2 and Jd_L3=@L3  and Jd_L4=@L4 and  Jd_JobCode=@JobCode";
+            //    var updateSql = "update Job_Definition set Jd_PlanRuntime=@LastRuntime  where Jd_CallSign=@CallSign and Jd_L1=@L1 and Jd_L2=@L2 and Jd_L3=@L3  and Jd_L4=@L4 and  Jd_JobCode=@JobCode";
+
+            //    var b103 = SqlManager.ExecuteNonQuery(sql:updateSql,parameters:new Dictionary<string, object>() 
+            //    {
+            //        {"CallSign", jh.CallSign},
+            //        {"L1", jh.L1},
+            //        {"L2", jh.L2},
+            //        {"L3", jh.L3},
+            //        {"L4", jh.L4},
+            //        {"JobCode", jh.JobCode},
+            //        {"LastRuntime", Convert.ToInt32(jh.LastRuntime)+2000 }
+            //    },connection:connection)>0;
+
+            //    Console.WriteLine($"{jh.CallSign}-{jh.L1}-{jh.L2}-{jh.L3}-{jh.L4}-{jh.JobCode}");
+
+            //    Console.WriteLine(b103);
+            //}
+
+
+            Console.WriteLine();
+
             //Job_History.ReCalculateLastJob(new MsSqlConnection(connectionString: "MsSqlConnectionString"), "9BRV","7","3","2","1","C",actionToWorkWithLastCompletedJob:null);
             //Job_History.ReCalculateLastJob(new MsSqlConnection(connectionString: "MsSqlConnectionString"), "9BRV", "3", "19", "1", "1", "A", actionToWorkWithLastCompletedJob: null);
 
@@ -140,6 +198,7 @@ namespace Synchronizer
 
 
 
+            //Shippernetix.Job_History.FixFromVesselToOffice("9VLU","13","1","23","1","C","3");
 
             //ExecuteNonQueryOn(new MsSqlConnection(connectionString: "9VRT"), "delete from Approval where A_CallSign='9VRT' and A_L1='4' and A_L2='7' and A_L3='10' and A_L4='1'");
             //FixSpares("9BRV", "5", "1", "0", new MsSqlConnection(connectionString: "9BRV"), new MsSqlConnection(connectionString: "MsSqlConnectionString"), false);
@@ -862,6 +921,10 @@ namespace Synchronizer
                     },
                     {
                         "9ALV",config.GetConnectionString("9ALV")
+                    },
+                    {
+                        "DECK",
+                        "Data Source=172.22.23.52; Initial Catalog = GENEL; User Id = sa; Password = '';"
                     }
                 };
             });
