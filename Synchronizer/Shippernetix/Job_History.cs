@@ -75,7 +75,7 @@ namespace Synchronizer.Shippernetix
             var sourceColumnList = SqlManager.SelectColumnNamesForMSSQL("Job_History", source.Connection).Select(d => d["COLUMN_NAME"].ToString()).ToList();
 
             var targetColumnList = SqlManager.SelectColumnNamesForMSSQL("Job_History", target.Connection).Select(d => d["COLUMN_NAME"].ToString()).ToList();
-
+             
             var sourceColumnListDifferentWithTarget = sourceColumnList.Except(targetColumnList).ToList();
             var targetColumnListDifferentWithSource = targetColumnList.Except(sourceColumnList).ToList();
 
