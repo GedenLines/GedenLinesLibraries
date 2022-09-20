@@ -114,6 +114,8 @@ namespace AutomatMachine
             return this;
         }
 
+        private static object AutomatJobActionLockObject = new object();
+
         public Job Invoke()
         {
             if(JobState==AutomatMachine.JobState.Successful || JobState==AutomatMachine.JobState.Failed)
@@ -127,25 +129,31 @@ namespace AutomatMachine
 
             if (Action != null)
             {
-                try
+                lock (AutomatJobActionLockObject)
                 {
-                    JobState = global::AutomatMachine.JobState.Running;
+                    if (Action != null)
+                    {
+                        try
+                        {
+                            JobState = global::AutomatMachine.JobState.Running;
 
-                    Action.Invoke();
+                            Action.Invoke();
 
-                    LastWorkDate = DateTime.Now;
+                            LastWorkDate = DateTime.Now;
 
-                    NextWorkDate = DateTime.Now.AddMilliseconds(Interval);
+                            NextWorkDate = DateTime.Now.AddMilliseconds(Interval);
 
-                    NumberOfWorking++;
+                            NumberOfWorking++;
 
-                    JobState = global::AutomatMachine.JobState.Successful;
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine(ex);
+                            JobState = global::AutomatMachine.JobState.Successful;
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine(ex);
 
-                    JobState = global::AutomatMachine.JobState.Failed;
+                            JobState = global::AutomatMachine.JobState.Failed;
+                        }
+                    }
                 }
             }
 
