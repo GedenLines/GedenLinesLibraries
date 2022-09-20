@@ -28,8 +28,8 @@ namespace Synchronizer
         {
             new MailManager(o => o.Code == "GedenErp")
                 .Prepare(new Mail(new MailAddress("shippernetix@gedenlines.com"), null, $"Synchronization Operation 101 / {subject}", $"{message}")
-            //.AddTo(new MailAddress("bt@gedenlines.com")))
-            .AddTo(new MailAddress("karar@gedenlines.com")))
+            .AddTo(new MailAddress("bt@gedenlines.com")))
+            //.AddTo(new MailAddress("karar@gedenlines.com")))
             .Send((ex) =>
             {
                 Console.WriteLine(ex.Message);
@@ -54,6 +54,7 @@ namespace Synchronizer
 
             Service.Start();
             //Job_History.ReCalculateLastJob(connection: new MsSqlConnection(connectionString: "MsSqlConnectionString"), callSign: "9HNK", l1: "19", l2: "1", l3: "1", l4: "1", jobCode: "A", actionToWorkWithLastCompletedJob: null);
+
 
 
             Console.WriteLine();
@@ -234,16 +235,16 @@ namespace Synchronizer
 
             //Shippernetix.Job_History.ReCalculateLastJob(new MsSqlConnection(connectionString: "MsSqlConnectionString"), callSign: "9HLN", "1", "1", "13", "11", "A", "2022-01-22 00:00:00.000");
 
-            //Shippernetix.Job_History.ReCalculateLastJob(new MsSqlConnection(connectionString: "MsSqlConnectionString"), callSign: "9VRT", "17", "1", "1", "1", "A", "2022-01-26 00:00:00.000");
+            //Shippernetix.Job_History.ReCalculateLastJob(new MsSqlConnection(connectionString: "9ALV"), callSign: "9ALV", "14", "2", "2", "9", "A", "2022-01-26 00:00:00.000");
             //Shippernetix.Job_History.ReCalculateLastJob(new MsSqlConnection(connectionString: "MsSqlConnectionString"), callSign: "9VRT", l1:"17", l2:"1", l3:"1", l4: "10", jobCode: "A",actionToWorkWithLastCompletedJob:null);
             //Shippernetix.Job_History.ReCalculateLastJob(new MsSqlConnection(connectionString: "MsSqlConnectionString"), callSign: "9HNK", l1:"2", l2:"2", l3:"2", l4: "2", jobCode: "B",actionToWorkWithLastCompletedJob:null);
             //Shippernetix.Job_History.ReCalculateLastJob(new MsSqlConnection(connectionString: "MsSqlConnectionString"), callSign: "9HNK", l1:"2", l2:"2", l3:"2", l4: "2", jobCode: "C",actionToWorkWithLastCompletedJob:null);
             //Shippernetix.Job_History.ReCalculateLastJob(new MsSqlConnection(connectionString: "MsSqlConnectionString"), callSign: "9HNK", l1:"2", l2:"2", l3:"2", l4: "1", jobCode: "A",actionToWorkWithLastCompletedJob:null);
             //Shippernetix.Job_History.ReCalculateLastJob(new MsSqlConnection(connectionString: "MsSqlConnectionString"), callSign: "9HNK", l1:"2", l2:"2", l3:"2", l4: "2", jobCode: "B",actionToWorkWithLastCompletedJob:null);
-            //Shippernetix.Job_History.ReCalculateLastJob(new MsSqlConnection(connectionString: "MsSqlConnectionString"), callSign: "9HNK", l1:"2", l2:"2", l3:"5", l4: "1", jobCode: "C",actionToWorkWithLastCompletedJob:null);
+            //Shippernetix.Job_History.ReCalculateLastJob(new MsSqlConnection(connectionString: "9ALV"), callSign: "9ALV", l1:"14", l2:"2", l3:"2", l4: "9", jobCode: "A",actionToWorkWithLastCompletedJob:null);
 
-
-            //Defect.FixFromOfficeToVessel("9HNK","Def-");
+            //Console.WriteLine();
+            //Defect.FixFromOfficeToVessel("9HNK","Def-");  
 
             //Shippernetix.Job_History.FixFromOfficeToVessel("9BUD", "5", "8", "6", "1", "Def-1968", "1");
             //Shippernetix.Job_History.FixFromOfficeToVessel("9BUD", "5", "8", "6", "1", "Def-2958", "1");
@@ -258,7 +259,8 @@ namespace Synchronizer
             //Console.ReadLine();
 
 
-            //Shippernetix.Job_History.FixFromVesselToOffice("9RYL", "10", "1", "2", "2", "Def-1067", "1");
+            //Shippernetix.Job_History.FixFromVesselToOffice("9ALF", "14", "3", "1", "1", "B", "1");
+           // Console.WriteLine();
             //Shippernetix.Job_History.FixFromVesselToOffice("9RYL", "12", "1", "2", "1", "Def-939", "1");
             //Shippernetix.Job_History.FixFromVesselToOffice("9RYL", "13", "1", "29", "1", "A", "1");
             //Shippernetix.Job_History.FixFromVesselToOffice("9RYL", "13", "1", "9", "2", "A", "136");
@@ -412,60 +414,65 @@ namespace Synchronizer
 
                 syncAction = (SyncAction)syncActionNumber;
 
-                foreach (var vessel in Vessel_Master.Vessels)
+                try
+
                 {
-                    if (vessel.CallSign != vesselCallSign)
-                        continue;
-
-                    var source = new Side("Office", "MsSqlConnectionString", true);
-
-                    var isSourceConnected = SqlManager.CheckConnection(source.Connection);
-
-                    var target = new Side(vessel.Name, vessel.CallSign, true);
-
-                    var istargetConnected = SqlManager.CheckConnection(target.Connection);
-
-
-
-                    if (isSourceConnected && istargetConnected)
+                    foreach (var vessel in Vessel_Master.Vessels)
                     {
-                        var maxDataPackage = SqlManager.ExecuteScalar("select max(CAST(Dr_PacketNo as int)) from Data_Receive where Dr_PrepareOwnerCode=@CallSign", new Dictionary<string, object>()
+                        if (vessel.CallSign != vesselCallSign)
+                            continue;
+                        //if (vessel.CallSign == "9VRD")
+                        //    continue;
+
+                        var source = new Side("Office", "MsSqlConnectionString", true);
+
+                        var isSourceConnected = SqlManager.CheckConnection(source.Connection);
+
+                        var target = new Side(vessel.Name, vessel.CallSign, true);
+
+                        var istargetConnected = SqlManager.CheckConnection(target.Connection);
+
+
+
+                        if (isSourceConnected && istargetConnected)
+                        {
+                            var maxDataPackage = SqlManager.ExecuteScalar("select max(CAST(Dr_PacketNo as int)) from Data_Receive where Dr_PrepareOwnerCode=@CallSign", new Dictionary<string, object>()
                     {
                         {"CallSign",vessel.CallSign }
                     }, connection: target.Connection);
 
-                        #region Delete Unwanted job which reaches max job number before previous one is completed
+                            #region Delete Unwanted job which reaches max job number before previous one is completed
 
-                        var sqlToClear = "select x.*from( " +
-                            "select jh.*, " +
-                            "(select max(Je_JobNo) from Job_History where Je_CallSign = jh.Je_CallSign and Je_L1 = jh.Je_L1 and Je_L2 = jh.Je_L2 and Je_L3 = jh.Je_L3 and Je_L4 = jh.Je_L4 and Je_JobCode = jh.Je_JobCode) as MaxJobNumber " +
-                            "from Job_History jh " +
-                            "where jh.Je_CallSign = @CallSign )x where x.Je_JobNo = x.MaxJobNumber - 1 and x.Je_Status <> 'COMPLETED' ";
+                            var sqlToClear = "select x.*from( " +
+                                "select jh.*, " +
+                                "(select max(Je_JobNo) from Job_History where Je_CallSign = jh.Je_CallSign and Je_L1 = jh.Je_L1 and Je_L2 = jh.Je_L2 and Je_L3 = jh.Je_L3 and Je_L4 = jh.Je_L4 and Je_JobCode = jh.Je_JobCode) as MaxJobNumber " +
+                                "from Job_History jh " +
+                                "where jh.Je_CallSign = @CallSign )x where x.Je_JobNo = x.MaxJobNumber - 1 and x.Je_Status <> 'COMPLETED' ";
 
-                        var sourceRecordsToClear = SqlManager.ExecuteQuery(sqlToClear, new Dictionary<string, object>()
+                            var sourceRecordsToClear = SqlManager.ExecuteQuery(sqlToClear, new Dictionary<string, object>()
                     {
                         {"CallSign",vessel.CallSign }
                     }, source.Connection)
-                       .Select(d => new
-                       {
-                           ShippernetixId = string.Format("{0}-{1}-{2}-{3}-{4}-{5}-{6}", d["Je_CallSign"], d["Je_L1"], d["Je_L2"], d["Je_L3"], d["Je_L4"], d["Je_JobCode"], d["Je_JobNo"]),
-                           Je_CallSign = d["Je_CallSign"],
-                           Je_L1 = d["Je_L1"],
-                           Je_L2 = d["Je_L2"],
-                           Je_L3 = d["Je_L3"],
-                           Je_L4 = d["Je_L4"],
-                           Je_JobCode = d["Je_JobCode"],
-                           Je_JobNo = d["Je_JobNo"],
-                           MaxJobNumber = d["MaxJobNumber"]
-                       })
-                    .ToList();
+                           .Select(d => new
+                           {
+                               ShippernetixId = string.Format("{0}-{1}-{2}-{3}-{4}-{5}-{6}", d["Je_CallSign"], d["Je_L1"], d["Je_L2"], d["Je_L3"], d["Je_L4"], d["Je_JobCode"], d["Je_JobNo"]),
+                               Je_CallSign = d["Je_CallSign"],
+                               Je_L1 = d["Je_L1"],
+                               Je_L2 = d["Je_L2"],
+                               Je_L3 = d["Je_L3"],
+                               Je_L4 = d["Je_L4"],
+                               Je_JobCode = d["Je_JobCode"],
+                               Je_JobNo = d["Je_JobNo"],
+                               MaxJobNumber = d["MaxJobNumber"]
+                           })
+                        .ToList();
 
-                        foreach (var item in sourceRecordsToClear)
-                        {
-                            Console.WriteLine("{0} is deleted : {1}", item.MaxJobNumber,
-                                SqlManager.ExecuteNonQuery("delete from Job_History where Je_CallSign=@Je_CallSign and Je_L1=@Je_L1 and Je_L2=@Je_L2 and Je_L3=@Je_L3 and Je_L4=@Je_L4 and Je_JobCode=@Je_JobCode and Je_JobNo=@MaxJobNo",
-                                new Dictionary<string, object>()
-                                {
+                            foreach (var item in sourceRecordsToClear)
+                            {
+                                Console.WriteLine("{0} is deleted : {1}", item.MaxJobNumber,
+                                    SqlManager.ExecuteNonQuery("delete from Job_History where Je_CallSign=@Je_CallSign and Je_L1=@Je_L1 and Je_L2=@Je_L2 and Je_L3=@Je_L3 and Je_L4=@Je_L4 and Je_JobCode=@Je_JobCode and Je_JobNo=@MaxJobNo",
+                                    new Dictionary<string, object>()
+                                    {
                                 {"Je_CallSign",item.Je_CallSign },
                                 {"Je_L1", item.Je_L1},
                                 {"Je_L2", item.Je_L2},
@@ -473,34 +480,34 @@ namespace Synchronizer
                                 {"Je_L4", item.Je_L4},
                                 {"Je_JobCode", item.Je_JobCode},
                                 {"MaxJobNo",item.MaxJobNumber }
-                                }, source.Connection));
-                        }
+                                    }, source.Connection));
+                            }
 
 
-                        var targetRecordsToClear = SqlManager.ExecuteQuery(sqlToClear, new Dictionary<string, object>()
+                            var targetRecordsToClear = SqlManager.ExecuteQuery(sqlToClear, new Dictionary<string, object>()
                     {
                         {"CallSign",vessel.CallSign }
                     }, target.Connection)
-                                               .Select(d => new
-                                               {
-                                                   ShippernetixId = string.Format("{0}-{1}-{2}-{3}-{4}-{5}-{6}", d["Je_CallSign"], d["Je_L1"], d["Je_L2"], d["Je_L3"], d["Je_L4"], d["Je_JobCode"], d["Je_JobNo"]),
-                                                   Je_CallSign = d["Je_CallSign"],
-                                                   Je_L1 = d["Je_L1"],
-                                                   Je_L2 = d["Je_L2"],
-                                                   Je_L3 = d["Je_L3"],
-                                                   Je_L4 = d["Je_L4"],
-                                                   Je_JobCode = d["Je_JobCode"],
-                                                   Je_JobNo = d["Je_JobNo"],
-                                                   MaxJobNumber = d["MaxJobNumber"]
-                                               })
-                            .ToList();
+                                                   .Select(d => new
+                                                   {
+                                                       ShippernetixId = string.Format("{0}-{1}-{2}-{3}-{4}-{5}-{6}", d["Je_CallSign"], d["Je_L1"], d["Je_L2"], d["Je_L3"], d["Je_L4"], d["Je_JobCode"], d["Je_JobNo"]),
+                                                       Je_CallSign = d["Je_CallSign"],
+                                                       Je_L1 = d["Je_L1"],
+                                                       Je_L2 = d["Je_L2"],
+                                                       Je_L3 = d["Je_L3"],
+                                                       Je_L4 = d["Je_L4"],
+                                                       Je_JobCode = d["Je_JobCode"],
+                                                       Je_JobNo = d["Je_JobNo"],
+                                                       MaxJobNumber = d["MaxJobNumber"]
+                                                   })
+                                .ToList();
 
-                        foreach (var item in targetRecordsToClear)
-                        {
-                            Console.WriteLine("{0} is deleted : {1}", item.MaxJobNumber,
-                                    SqlManager.ExecuteNonQuery("delete from Job_History where Je_CallSign=@Je_CallSign and Je_L1=@Je_L1 and Je_L2=@Je_L2 and Je_L3=@Je_L3 and Je_L4=@Je_L4 and Je_JobCode=@Je_JobCode and Je_JobNo=@MaxJobNo",
-                                    new Dictionary<string, object>()
-                                    {
+                            foreach (var item in targetRecordsToClear)
+                            {
+                                Console.WriteLine("{0} is deleted : {1}", item.MaxJobNumber,
+                                        SqlManager.ExecuteNonQuery("delete from Job_History where Je_CallSign=@Je_CallSign and Je_L1=@Je_L1 and Je_L2=@Je_L2 and Je_L3=@Je_L3 and Je_L4=@Je_L4 and Je_JobCode=@Je_JobCode and Je_JobNo=@MaxJobNo",
+                                        new Dictionary<string, object>()
+                                        {
                                                             {"Je_CallSign",item.Je_CallSign },
                                                             {"Je_L1", item.Je_L1},
                                                             {"Je_L2", item.Je_L2},
@@ -508,19 +515,19 @@ namespace Synchronizer
                                                             {"Je_L4", item.Je_L4},
                                                             {"Je_JobCode", item.Je_JobCode},
                                                             {"MaxJobNo",item.MaxJobNumber }
-                                    }, target.Connection));
-                        }
+                                        }, target.Connection));
+                            }
 
-                        #endregion
+                            #endregion
 
 
-                        Action<CustomConnection, string, string, string, string, string, string, string> actionForComplete = (cc, callSign, l1, l2, l3, l4, jobCode, jobNo) =>
-                        {
-                            var q = "update Job_History set Je_Status='COMPLETED' where Je_CallSign=@CallSign and Je_L1=@L1 and  Je_L2=@L2 and Je_L3=@L3 and Je_L4=@L4 and Je_JobCode=@JobCode and Je_JobNo=@JobNo";
+                            Action<CustomConnection, string, string, string, string, string, string, string> actionForComplete = (cc, callSign, l1, l2, l3, l4, jobCode, jobNo) =>
+                            {
+                                var q = "update Job_History set Je_Status='COMPLETED' where Je_CallSign=@CallSign and Je_L1=@L1 and  Je_L2=@L2 and Je_L3=@L3 and Je_L4=@L4 and Je_JobCode=@JobCode and Je_JobNo=@JobNo";
 
-                            var isUpdated = SqlManager.ExecuteNonQuery(q,
-                                new Dictionary<string, object>()
-                                {
+                                var isUpdated = SqlManager.ExecuteNonQuery(q,
+                                    new Dictionary<string, object>()
+                                    {
                                 {"CallSign", callSign},
                                 {"L1", l1},
                                 {"L2", l2},
@@ -528,57 +535,57 @@ namespace Synchronizer
                                 {"L4", l4},
                                 {"JobCode", jobCode},
                                 {"JobNo", jobNo},
-                                },
-                                cc);
+                                    },
+                                    cc);
 
-                            Console.WriteLine("isUpdated: " + isUpdated);
-                        };
+                                Console.WriteLine("isUpdated: " + isUpdated);
+                            };
 
-                        Console.WriteLine("Fixing : From target to source");
+                            Console.WriteLine("Fixing : From target to source");
 
-                        var queryToFix = "  select z.* from(select y.*," +
-                                            "(select max(jh.Je_JobNo) from Job_History jh where jh.Je_CallSign = y.Je_CallSign " +
-                                            "and jh.Je_L1 = y.Je_L1 " +
-                                            "and jh.Je_L2 = y.Je_L2 " +
-                                            "and jh.Je_L3 = y.Je_L3 " +
-                                            "and jh.Je_L4 = y.Je_L4 " +
-                                            "and jh.Je_JobCode = y.Je_JobCode) as MaxJobNumber " +
-                                            "from(select Je_CallSign, Je_L1, Je_L2, Je_L3, Je_L4, Je_JobCode, Je_JobNo, Je_Status " +
-                                            "from(select jh1.* from Job_History jh1 where jh1.Je_CallSign = @CallSign)x " +
-                                            "group by Je_CallSign, Je_L1, Je_L2, Je_L3, Je_L4, Je_JobCode, Je_JobNo, Je_Status)y)z " +
-                                            "where (Je_JobCode not like '%Def%' and Je_JobCode not like '%Dam%') and ((Je_JobNo < MaxJobNumber and Je_Status<>'COMPLETED') or (MaxJobNumber=1 and Je_Status='COMPLETED'))";
+                            var queryToFix = "  select z.* from(select y.*," +
+                                                "(select max(jh.Je_JobNo) from Job_History jh where jh.Je_CallSign = y.Je_CallSign " +
+                                                "and jh.Je_L1 = y.Je_L1 " +
+                                                "and jh.Je_L2 = y.Je_L2 " +
+                                                "and jh.Je_L3 = y.Je_L3 " +
+                                                "and jh.Je_L4 = y.Je_L4 " +
+                                                "and jh.Je_JobCode = y.Je_JobCode) as MaxJobNumber " +
+                                                "from(select Je_CallSign, Je_L1, Je_L2, Je_L3, Je_L4, Je_JobCode, Je_JobNo, Je_Status " +
+                                                "from(select jh1.* from Job_History jh1 where jh1.Je_CallSign = @CallSign)x " +
+                                                "group by Je_CallSign, Je_L1, Je_L2, Je_L3, Je_L4, Je_JobCode, Je_JobNo, Je_Status)y)z " +
+                                                "where (Je_JobCode not like '%Def%' and Je_JobCode not like '%Dam%') and ((Je_JobNo < MaxJobNumber and Je_Status<>'COMPLETED') or (MaxJobNumber=1 and Je_Status='COMPLETED'))";
 
 
-                        var sourceList = SqlManager.ExecuteQuery(queryToFix,
-                            new Dictionary<string, object>()
-                            {
+                            var sourceList = SqlManager.ExecuteQuery(queryToFix,
+                                new Dictionary<string, object>()
+                                {
                             { "CallSign",vessel.CallSign }
-                            },
-                            source.Connection)
-                            .Select(d => new
+                                },
+                                source.Connection)
+                                .Select(d => new
+                                {
+                                    ShippernetixId = string.Format("{0}-{1}-{2}-{3}-{4}-{5}-{6}", d["Je_CallSign"], d["Je_L1"], d["Je_L2"], d["Je_L3"], d["Je_L4"], d["Je_JobCode"], d["Je_JobNo"]),
+                                    Je_CallSign = d["Je_CallSign"],
+                                    Je_L1 = d["Je_L1"],
+                                    Je_L2 = d["Je_L2"],
+                                    Je_L3 = d["Je_L3"],
+                                    Je_L4 = d["Je_L4"],
+                                    Je_JobCode = d["Je_JobCode"],
+                                    Je_JobNo = d["Je_JobNo"],
+                                    MaxJobNumber = d["MaxJobNumber"]
+                                })
+                                .ToList();
+
+                            var counter = 0;
+                            foreach (var sourceItem in sourceList)
                             {
-                                ShippernetixId = string.Format("{0}-{1}-{2}-{3}-{4}-{5}-{6}", d["Je_CallSign"], d["Je_L1"], d["Je_L2"], d["Je_L3"], d["Je_L4"], d["Je_JobCode"], d["Je_JobNo"]),
-                                Je_CallSign = d["Je_CallSign"],
-                                Je_L1 = d["Je_L1"],
-                                Je_L2 = d["Je_L2"],
-                                Je_L3 = d["Je_L3"],
-                                Je_L4 = d["Je_L4"],
-                                Je_JobCode = d["Je_JobCode"],
-                                Je_JobNo = d["Je_JobNo"],
-                                MaxJobNumber = d["MaxJobNumber"]
-                            })
-                            .ToList();
+                                //actionForComplete(source.Connection,sourceItem.Je_CallSign.ToString(),sourceItem.Je_L1.ToString(), sourceItem.Je_L2.ToString(), sourceItem.Je_L3.ToString(), sourceItem.Je_L4.ToString(), sourceItem.Je_JobCode.ToString(), sourceItem.Je_JobNo.ToString());
 
-                        var counter = 0;
-                        foreach (var sourceItem in sourceList)
-                        {
-                            //actionForComplete(source.Connection,sourceItem.Je_CallSign.ToString(),sourceItem.Je_L1.ToString(), sourceItem.Je_L2.ToString(), sourceItem.Je_L3.ToString(), sourceItem.Je_L4.ToString(), sourceItem.Je_JobCode.ToString(), sourceItem.Je_JobNo.ToString());
+                                if (Convert.ToInt32(sourceItem.MaxJobNumber) == 1)
+                                {
+                                    var maxJobNumberForCompleted = Convert.ToInt32(sourceItem.MaxJobNumber);
 
-                            if (Convert.ToInt32(sourceItem.MaxJobNumber) == 1)
-                            {
-                                var maxJobNumberForCompleted = Convert.ToInt32(sourceItem.MaxJobNumber);
-
-                                var parameters = new Dictionary<string, object>()
+                                    var parameters = new Dictionary<string, object>()
                                 {
                                     {"CallSign",sourceItem.Je_CallSign.ToString() },
                                     {"L1", sourceItem.Je_L1.ToString()},
@@ -589,59 +596,59 @@ namespace Synchronizer
                                     {"LastCompletedJobNo",maxJobNumberForCompleted}
                                 };
 
-                                var updateLastCompletedJobStatusQuery = "update Job_History set Je_Status='NEXT JOB' where Je_CallSign = @CallSign and Je_L1 = @L1 and Je_L2 = @L2 and Je_L3 = @L3 and Je_L4 = @L4 and Je_JobCode = @JobCode and Je_JobNo=@LastCompletedJobNo";
+                                    var updateLastCompletedJobStatusQuery = "update Job_History set Je_Status='NEXT JOB' where Je_CallSign = @CallSign and Je_L1 = @L1 and Je_L2 = @L2 and Je_L3 = @L3 and Je_L4 = @L4 and Je_JobCode = @JobCode and Je_JobNo=@LastCompletedJobNo";
 
-                                var arc = SqlManager.ExecuteNonQuery(updateLastCompletedJobStatusQuery, parameters, source.Connection);
+                                    var arc = SqlManager.ExecuteNonQuery(updateLastCompletedJobStatusQuery, parameters, source.Connection);
 
-                                Console.WriteLine($"Updating lastCompletedJobStatus({maxJobNumberForCompleted}) as Next Job : {arc > 0}");
+                                    Console.WriteLine($"Updating lastCompletedJobStatus({maxJobNumberForCompleted}) as Next Job : {arc > 0}");
 
-                                updateLastCompletedJobStatusQuery = "update Job_History set Je_Status='COMPLETED' where Je_CallSign = @CallSign and Je_L1 = @L1 and Je_L2 = @L2 and Je_L3 = @L3 and Je_L4 = @L4 and Je_JobCode = @JobCode and Je_JobNo=@LastCompletedJobNo";
+                                    updateLastCompletedJobStatusQuery = "update Job_History set Je_Status='COMPLETED' where Je_CallSign = @CallSign and Je_L1 = @L1 and Je_L2 = @L2 and Je_L3 = @L3 and Je_L4 = @L4 and Je_JobCode = @JobCode and Je_JobNo=@LastCompletedJobNo";
 
-                                arc = SqlManager.ExecuteNonQuery(updateLastCompletedJobStatusQuery, parameters, source.Connection);
+                                    arc = SqlManager.ExecuteNonQuery(updateLastCompletedJobStatusQuery, parameters, source.Connection);
 
-                                Console.WriteLine($"Updating lastCompletedJobStatus({maxJobNumberForCompleted}) as Completed : {arc > 0}");
+                                    Console.WriteLine($"Updating lastCompletedJobStatus({maxJobNumberForCompleted}) as Completed : {arc > 0}");
+                                }
+                                else
+                                {
+                                    Shippernetix.Job_History.Fix(sourceItem.Je_CallSign.ToString(), sourceItem.Je_L1.ToString(), sourceItem.Je_L2.ToString(), sourceItem.Je_L3.ToString(), sourceItem.Je_L4.ToString(), sourceItem.Je_JobCode.ToString(), sourceItem.Je_JobNo.ToString(), target.Connection, source.Connection, true);
+                                }
+
+                                Console.WriteLine(sourceItem.ShippernetixId + " " + counter++);
                             }
-                            else
-                            {
-                                Shippernetix.Job_History.Fix(sourceItem.Je_CallSign.ToString(), sourceItem.Je_L1.ToString(), sourceItem.Je_L2.ToString(), sourceItem.Je_L3.ToString(), sourceItem.Je_L4.ToString(), sourceItem.Je_JobCode.ToString(), sourceItem.Je_JobNo.ToString(), target.Connection, source.Connection, true);
-                            }
 
-                            Console.WriteLine(sourceItem.ShippernetixId + " " + counter++);
-                        }
+                            Console.WriteLine("Fixing : From source to target");
 
-                        Console.WriteLine("Fixing : From source to target");
-
-                        var targetList = SqlManager.ExecuteQuery(queryToFix,
-                            new Dictionary<string, object>()
-                            {
+                            var targetList = SqlManager.ExecuteQuery(queryToFix,
+                                new Dictionary<string, object>()
+                                {
                             { "CallSign",vessel.CallSign }
-                            },
-                            target.Connection)
-                            .Select(d => new
+                                },
+                                target.Connection)
+                                .Select(d => new
+                                {
+                                    ShippernetixId = string.Format("{0}-{1}-{2}-{3}-{4}-{5}-{6}", d["Je_CallSign"], d["Je_L1"], d["Je_L2"], d["Je_L3"], d["Je_L4"], d["Je_JobCode"], d["Je_JobNo"]),
+                                    Je_CallSign = d["Je_CallSign"],
+                                    Je_L1 = d["Je_L1"],
+                                    Je_L2 = d["Je_L2"],
+                                    Je_L3 = d["Je_L3"],
+                                    Je_L4 = d["Je_L4"],
+                                    Je_JobCode = d["Je_JobCode"],
+                                    Je_JobNo = d["Je_JobNo"],
+                                    MaxJobNumber = d["MaxJobNumber"]
+                                })
+                                .ToList();
+
+                            counter = 0;
+                            foreach (var targetItem in targetList)
                             {
-                                ShippernetixId = string.Format("{0}-{1}-{2}-{3}-{4}-{5}-{6}", d["Je_CallSign"], d["Je_L1"], d["Je_L2"], d["Je_L3"], d["Je_L4"], d["Je_JobCode"], d["Je_JobNo"]),
-                                Je_CallSign = d["Je_CallSign"],
-                                Je_L1 = d["Je_L1"],
-                                Je_L2 = d["Je_L2"],
-                                Je_L3 = d["Je_L3"],
-                                Je_L4 = d["Je_L4"],
-                                Je_JobCode = d["Je_JobCode"],
-                                Je_JobNo = d["Je_JobNo"],
-                                MaxJobNumber = d["MaxJobNumber"]
-                            })
-                            .ToList();
-
-                        counter = 0;
-                        foreach (var targetItem in targetList)
-                        {
-                            //actionForComplete(target.Connection, targetItem.Je_CallSign.ToString(), targetItem.Je_L1.ToString(), targetItem.Je_L2.ToString(), targetItem.Je_L3.ToString(), targetItem.Je_L4.ToString(), targetItem.Je_JobCode.ToString(), targetItem.Je_JobNo.ToString());
+                                //actionForComplete(target.Connection, targetItem.Je_CallSign.ToString(), targetItem.Je_L1.ToString(), targetItem.Je_L2.ToString(), targetItem.Je_L3.ToString(), targetItem.Je_L4.ToString(), targetItem.Je_JobCode.ToString(), targetItem.Je_JobNo.ToString());
 
 
-                            if (Convert.ToInt32(targetItem.MaxJobNumber) == 1)
-                            {
-                                var maxJobNumberForCompleted = Convert.ToInt32(targetItem.MaxJobNumber);
+                                if (Convert.ToInt32(targetItem.MaxJobNumber) == 1)
+                                {
+                                    var maxJobNumberForCompleted = Convert.ToInt32(targetItem.MaxJobNumber);
 
-                                var parameters = new Dictionary<string, object>()
+                                    var parameters = new Dictionary<string, object>()
                                 {
                                     {"CallSign",targetItem.Je_CallSign.ToString() },
                                     {"L1", targetItem.Je_L1.ToString()},
@@ -652,64 +659,70 @@ namespace Synchronizer
                                     {"LastCompletedJobNo",maxJobNumberForCompleted}
                                 };
 
-                                var updateLastCompletedJobStatusQuery = "update Job_History set Je_Status='NEXT JOB' where Je_CallSign = @CallSign and Je_L1 = @L1 and Je_L2 = @L2 and Je_L3 = @L3 and Je_L4 = @L4 and Je_JobCode = @JobCode and Je_JobNo=@LastCompletedJobNo";
+                                    var updateLastCompletedJobStatusQuery = "update Job_History set Je_Status='NEXT JOB' where Je_CallSign = @CallSign and Je_L1 = @L1 and Je_L2 = @L2 and Je_L3 = @L3 and Je_L4 = @L4 and Je_JobCode = @JobCode and Je_JobNo=@LastCompletedJobNo";
 
-                                var arc = SqlManager.ExecuteNonQuery(updateLastCompletedJobStatusQuery, parameters, target.Connection);
+                                    var arc = SqlManager.ExecuteNonQuery(updateLastCompletedJobStatusQuery, parameters, target.Connection);
 
-                                Console.WriteLine($"Updating lastCompletedJobStatus({maxJobNumberForCompleted}) as Next Job : {arc > 0}");
+                                    Console.WriteLine($"Updating lastCompletedJobStatus({maxJobNumberForCompleted}) as Next Job : {arc > 0}");
 
-                                updateLastCompletedJobStatusQuery = "update Job_History set Je_Status='COMPLETED' where Je_CallSign = @CallSign and Je_L1 = @L1 and Je_L2 = @L2 and Je_L3 = @L3 and Je_L4 = @L4 and Je_JobCode = @JobCode and Je_JobNo=@LastCompletedJobNo";
+                                    updateLastCompletedJobStatusQuery = "update Job_History set Je_Status='COMPLETED' where Je_CallSign = @CallSign and Je_L1 = @L1 and Je_L2 = @L2 and Je_L3 = @L3 and Je_L4 = @L4 and Je_JobCode = @JobCode and Je_JobNo=@LastCompletedJobNo";
 
-                                arc = SqlManager.ExecuteNonQuery(updateLastCompletedJobStatusQuery, parameters, target.Connection);
+                                    arc = SqlManager.ExecuteNonQuery(updateLastCompletedJobStatusQuery, parameters, target.Connection);
 
-                                Console.WriteLine($"Updating lastCompletedJobStatus({maxJobNumberForCompleted}) as Completed : {arc > 0}");
+                                    Console.WriteLine($"Updating lastCompletedJobStatus({maxJobNumberForCompleted}) as Completed : {arc > 0}");
+                                }
+                                else
+                                {
+                                    Shippernetix.Job_History.Fix(targetItem.Je_CallSign.ToString(), targetItem.Je_L1.ToString(), targetItem.Je_L2.ToString(), targetItem.Je_L3.ToString(), targetItem.Je_L4.ToString(), targetItem.Je_JobCode.ToString(), targetItem.Je_JobNo.ToString(), source.Connection, target.Connection, true);
+                                }
+                                Console.WriteLine(targetItem.ShippernetixId + " " + counter++);
                             }
-                            else
-                            {
-                                Shippernetix.Job_History.Fix(targetItem.Je_CallSign.ToString(), targetItem.Je_L1.ToString(), targetItem.Je_L2.ToString(), targetItem.Je_L3.ToString(), targetItem.Je_L4.ToString(), targetItem.Je_JobCode.ToString(), targetItem.Je_JobNo.ToString(), source.Connection, target.Connection, true);
-                            }
-                            Console.WriteLine(targetItem.ShippernetixId + " " + counter++);
                         }
-                    }
-                    else
-                    {
-                        Console.WriteLine($"Could Not Connect Office({isSourceConnected}) Or Vessel({istargetConnected}) Database. \n Please Check Connection String And Vpn Configurations");
-                    }
-
-                    if (isSourceConnected && istargetConnected)
-                    {
-
-
-                        switch (syncAction)
+                        else
                         {
-                            case SyncAction.AllOfThem:
-                                Structure.Sync(source, target, vessel, onlyMail);
-                                Job_Definition.Sync(source, target, vessel, onlyMail);
-                                Defect.Sync(source, target, vessel, onlyMail);
-                                Job_History.Sync(source, target, vessel, onlyMail);
-                                break;
-                            case SyncAction.Structure:
-                                Structure.Sync(source, target, vessel, onlyMail);
-                                break;
-                            case SyncAction.JobDefinition:
-                                Job_Definition.Sync(source, target, vessel, onlyMail);
-                                break;
-                            case SyncAction.Defect:
-                                Defect.Sync(source, target, vessel, onlyMail);
-                                break;
-                            case SyncAction.JobHistory:
-                                Job_History.Sync(source, target, vessel, onlyMail);
-                                break;
-                            default:
-                                Structure.Sync(source, target, vessel, onlyMail);
-                                Job_Definition.Sync(source, target, vessel, onlyMail);
-                                Defect.Sync(source, target, vessel, onlyMail);
-                                Job_History.Sync(source, target, vessel, onlyMail);
-                                break;
+                            Console.WriteLine($"Could Not Connect Office({isSourceConnected}) Or Vessel({istargetConnected}) Database. \n Please Check Connection String And Vpn Configurations");
                         }
+
+                        if (isSourceConnected && istargetConnected)
+                        {
+
+
+                            switch (syncAction)
+                            {
+                                case SyncAction.AllOfThem:
+                                    Structure.Sync(source, target, vessel, onlyMail);
+                                    Job_Definition.Sync(source, target, vessel, onlyMail);
+                                    Defect.Sync(source, target, vessel, onlyMail);
+                                    Job_History.Sync(source, target, vessel, onlyMail);
+                                    break;
+                                case SyncAction.Structure:
+                                    Structure.Sync(source, target, vessel, onlyMail);
+                                    break;
+                                case SyncAction.JobDefinition:
+                                    Job_Definition.Sync(source, target, vessel, onlyMail);
+                                    break;
+                                case SyncAction.Defect:
+                                    Defect.Sync(source, target, vessel, onlyMail);
+                                    break;
+                                case SyncAction.JobHistory:
+                                    Job_History.Sync(source, target, vessel, onlyMail);
+                                    break;
+                                default:
+                                    Structure.Sync(source, target, vessel, onlyMail);
+                                    Job_Definition.Sync(source, target, vessel, onlyMail);
+                                    Defect.Sync(source, target, vessel, onlyMail);
+                                    Job_History.Sync(source, target, vessel, onlyMail);
+                                    break;
+                            }
+                        }
+                        else
+                            Console.WriteLine("Source({0}) is connected : {1},Target({2}) is Connected : {3}", source.Name, isSourceConnected, target.Name, istargetConnected);
                     }
-                    else
-                        Console.WriteLine("Source({0}) is connected : {1},Target({2}) is Connected : {3}", source.Name, isSourceConnected, target.Name, istargetConnected);
+                }
+                catch (Exception exc)
+                {
+
+                    Console.WriteLine(exc);
                 }
             }
             else if (status == 2)
