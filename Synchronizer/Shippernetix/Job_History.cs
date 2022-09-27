@@ -13,6 +13,12 @@ namespace Synchronizer.Shippernetix
     {
         private readonly object LockObject = new object();
 
+        private static object LastTargetRecordsLockObject = new object();
+
+        private static object IntermediateTargetRecordsLockObject = new object();
+
+        private static object LastSourceRecordsLockObject = new object();
+
         public Job_History(string callSign, string l1, string l2, string l3, string l4, string jobCode, string jobNumber, List<string> excludedColumnList,CustomConnection customConnection, bool prepareForVesselSide)
         {
             var parameters = new Dictionary<string, object>();
@@ -212,7 +218,7 @@ namespace Synchronizer.Shippernetix
                                     source.PrepareForVesselSide);
                             }
 
-                            var affectedRowsCount = SqlManager.ExecuteNonQuery(sql: jobHistory.Table.GetInsertQueries, parameters: null, target.Connection);
+                            var affectedRowsCount = jobHistory==null ? 0 :  SqlManager.ExecuteNonQuery(sql: jobHistory.Table.GetInsertQueries, parameters: null, target.Connection);
 
                             if (affectedRowsCount > 0)
                                 logMessages.Add(messageAction(string.Format("{0} Transfered From {1} To {2}", sourceDifference.ShippernetixId, source.Name, target.Name)));
@@ -236,73 +242,75 @@ namespace Synchronizer.Shippernetix
                     {
                         Action action = new Action(() =>
                         {
-
-                            source.Reconnect();
-                            target.Reconnect();
-                            var jobHistory = new Job_History(sourceDifference.Je_CallSign.ToString(),
-                                                                sourceDifference.Je_L1.ToString(),
-                                                                sourceDifference.Je_L2.ToString(),
-                                                                sourceDifference.Je_L3.ToString(),
-                                                                sourceDifference.Je_L4.ToString(),
-                                                                sourceDifference.Je_JobCode.ToString(),
-                                                                sourceDifference.Je_JobNo.ToString(),
-                                                                sourceColumnListDifferentWithTarget,
-                                                                source.Connection,
-                                                                source.PrepareForVesselSide);
-
-                            if (jobHistory == null)
-                                return;
-
-                            var previousJobNumber = Convert.ToInt32(sourceDifference.Je_JobNo) - 1;
-
-                            previousJobNumber = previousJobNumber == 0 ? 1 : previousJobNumber;
-
-
-                            Job_History previousJobHistory = null;
-
-
-                            if (Job_History.Any(sourceDifference.Je_CallSign.ToString(),
-                                                sourceDifference.Je_L1.ToString(),
-                                                sourceDifference.Je_L2.ToString(),
-                                                sourceDifference.Je_L3.ToString(),
-                                                sourceDifference.Je_L4.ToString(),
-                                                sourceDifference.Je_JobCode.ToString(),
-                                                previousJobNumber.ToString(),
-                                                source.Connection))
+                            lock (LastSourceRecordsLockObject)
                             {
-                                if (previousJobNumber > 0)
-                                    previousJobHistory = new Job_History(sourceDifference.Je_CallSign.ToString(),
-                                        sourceDifference.Je_L1.ToString(),
-                                        sourceDifference.Je_L2.ToString(),
-                                        sourceDifference.Je_L3.ToString(),
-                                        sourceDifference.Je_L4.ToString(),
-                                        sourceDifference.Je_JobCode.ToString(),
-                                        previousJobNumber.ToString(),
-                                        sourceColumnListDifferentWithTarget,
-                                        source.Connection,
-                                        source.PrepareForVesselSide);
+                                source.Reconnect();
+                                target.Reconnect();
+                                var jobHistory = new Job_History(sourceDifference.Je_CallSign.ToString(),
+                                                                    sourceDifference.Je_L1.ToString(),
+                                                                    sourceDifference.Je_L2.ToString(),
+                                                                    sourceDifference.Je_L3.ToString(),
+                                                                    sourceDifference.Je_L4.ToString(),
+                                                                    sourceDifference.Je_JobCode.ToString(),
+                                                                    sourceDifference.Je_JobNo.ToString(),
+                                                                    sourceColumnListDifferentWithTarget,
+                                                                    source.Connection,
+                                                                    source.PrepareForVesselSide);
 
+                                if (jobHistory == null)
+                                    return;
+
+                                var previousJobNumber = Convert.ToInt32(sourceDifference.Je_JobNo) - 1;
+
+                                previousJobNumber = previousJobNumber == 0 ? 1 : previousJobNumber;
+
+
+                                Job_History previousJobHistory = null;
+
+
+                                if (Job_History.Any(sourceDifference.Je_CallSign.ToString(),
+                                                    sourceDifference.Je_L1.ToString(),
+                                                    sourceDifference.Je_L2.ToString(),
+                                                    sourceDifference.Je_L3.ToString(),
+                                                    sourceDifference.Je_L4.ToString(),
+                                                    sourceDifference.Je_JobCode.ToString(),
+                                                    previousJobNumber.ToString(),
+                                                    source.Connection))
+                                {
+                                    if (previousJobNumber > 0)
+                                        previousJobHistory = new Job_History(sourceDifference.Je_CallSign.ToString(),
+                                            sourceDifference.Je_L1.ToString(),
+                                            sourceDifference.Je_L2.ToString(),
+                                            sourceDifference.Je_L3.ToString(),
+                                            sourceDifference.Je_L4.ToString(),
+                                            sourceDifference.Je_JobCode.ToString(),
+                                            previousJobNumber.ToString(),
+                                            sourceColumnListDifferentWithTarget,
+                                            source.Connection,
+                                            source.PrepareForVesselSide);
+
+                                }
+
+
+                                var affectedRowsCount = SqlManager.ExecuteNonQuery(sql: jobHistory.Table.GetInsertQueries, parameters: null, target.Connection);
+
+                                if (affectedRowsCount > 0)
+                                    logMessages.Add(messageAction(string.Format("{0} Transfered From {1} To {2}", sourceDifference.ShippernetixId, source.Name, target.Name)));
+                                else
+                                    logMessages.Add(messageAction(string.Format("An error occured while transfering job_History : {0}", sourceDifference.ShippernetixId)));
+
+
+                                if (previousJobNumber < 1 || previousJobHistory == null)
+                                    return;
+
+
+                                var affectedRowsCount2 = SqlManager.ExecuteNonQuery(sql: jobHistory.Table.GetUpdateQueries, parameters: null, target.Connection);
+
+                                if (affectedRowsCount2 > 0)
+                                    logMessages.Add(messageAction(string.Format("{0} Updated From {1} To {2}", string.Format("{0}-{1}-{2}-{3}-{4}-{5}-{6}", sourceDifference.Je_CallSign, sourceDifference.Je_L1, sourceDifference.Je_L2, sourceDifference.Je_L3, sourceDifference.Je_L4, sourceDifference.Je_JobCode, previousJobNumber), source.Name, target.Name)));
+                                else
+                                    logMessages.Add(messageAction(string.Format("An error occured while transfering job_History : {0}", sourceDifference.ShippernetixId)));
                             }
-
-
-                            var affectedRowsCount = SqlManager.ExecuteNonQuery(sql: jobHistory.Table.GetInsertQueries, parameters: null, target.Connection);
-
-                            if (affectedRowsCount > 0)
-                                logMessages.Add(messageAction(string.Format("{0} Transfered From {1} To {2}", sourceDifference.ShippernetixId, source.Name, target.Name)));
-                            else
-                                logMessages.Add(messageAction(string.Format("An error occured while transfering job_History : {0}", sourceDifference.ShippernetixId)));
-
-
-                            if (previousJobNumber < 1 || previousJobHistory == null)
-                                return;
-
-
-                            var affectedRowsCount2 = SqlManager.ExecuteNonQuery(sql: jobHistory.Table.GetUpdateQueries, parameters: null, target.Connection);
-
-                            if (affectedRowsCount2 > 0)
-                                logMessages.Add(messageAction(string.Format("{0} Updated From {1} To {2}", string.Format("{0}-{1}-{2}-{3}-{4}-{5}-{6}", sourceDifference.Je_CallSign, sourceDifference.Je_L1, sourceDifference.Je_L2, sourceDifference.Je_L3, sourceDifference.Je_L4, sourceDifference.Je_JobCode, previousJobNumber), source.Name, target.Name)));
-                            else
-                                logMessages.Add(messageAction(string.Format("An error occured while transfering job_History : {0}", sourceDifference.ShippernetixId)));
                         });
                         taskList.Add(new Task(action));
                     }
@@ -338,54 +346,64 @@ namespace Synchronizer.Shippernetix
 
                     foreach (var targetDifference in intermediateTargetRecords)
                     {
-                        source.Reconnect();
-                        target.Reconnect();
 
-                        try
+                        Action action = new Action(() =>
                         {
-
-                            Job_History jobHistory = null;
-
-                            if (Job_History.Any(targetDifference.Je_CallSign.ToString(),
-                                targetDifference.Je_L1.ToString(),
-                                targetDifference.Je_L2.ToString(),
-                                targetDifference.Je_L3.ToString(),
-                                targetDifference.Je_L4.ToString(),
-                                targetDifference.Je_JobCode.ToString(),
-                                targetDifference.Je_JobNo.ToString(),
-                                target.Connection))
+                            lock (IntermediateTargetRecordsLockObject)
                             {
-                                jobHistory = new Job_History(targetDifference.Je_CallSign.ToString(),
-                                                targetDifference.Je_L1.ToString(),
-                                                targetDifference.Je_L2.ToString(),
-                                                targetDifference.Je_L3.ToString(),
-                                                targetDifference.Je_L4.ToString(),
-                                                targetDifference.Je_JobCode.ToString(),
-                                                targetDifference.Je_JobNo.ToString(),
-                                                targetColumnListDifferentWithSource,
-                                                target.Connection,
-                                                target.PrepareForVesselSide);
+
+                                source.Reconnect();
+                                target.Reconnect();
+
+                                try
+                                {
+
+                                    Job_History jobHistory = null;
+
+                                    if (Job_History.Any(targetDifference.Je_CallSign.ToString(),
+                                        targetDifference.Je_L1.ToString(),
+                                        targetDifference.Je_L2.ToString(),
+                                        targetDifference.Je_L3.ToString(),
+                                        targetDifference.Je_L4.ToString(),
+                                        targetDifference.Je_JobCode.ToString(),
+                                        targetDifference.Je_JobNo.ToString(),
+                                        target.Connection))
+                                    {
+                                        jobHistory = new Job_History(targetDifference.Je_CallSign.ToString(),
+                                                        targetDifference.Je_L1.ToString(),
+                                                        targetDifference.Je_L2.ToString(),
+                                                        targetDifference.Je_L3.ToString(),
+                                                        targetDifference.Je_L4.ToString(),
+                                                        targetDifference.Je_JobCode.ToString(),
+                                                        targetDifference.Je_JobNo.ToString(),
+                                                        targetColumnListDifferentWithSource,
+                                                        target.Connection,
+                                                        target.PrepareForVesselSide);
+                                    }
+
+
+
+
+                                    if (jobHistory == null)
+                                        return;
+
+                                    var affectedRowsCount = SqlManager.ExecuteNonQuery(sql: jobHistory.Table.GetInsertQueries, parameters: null, source.Connection);
+
+                                    if (affectedRowsCount > 0)
+                                        logMessages.Add(messageAction(string.Format("{0} Transfered From {1} To {2}", targetDifference.ShippernetixId, target.Name, source.Name)));
+                                    else
+                                        logMessages.Add(messageAction(string.Format("An error occured while transfering job_History : {0}", targetDifference.ShippernetixId)));
+                                }
+                                catch (Exception ex)
+                                {
+
+                                    Console.WriteLine(targetDifference.ShippernetixId + " " + ex.Message);
+                                }
                             }
 
+                        });
 
-
-
-                            if (jobHistory == null)
-                                return;
-
-                            var affectedRowsCount = SqlManager.ExecuteNonQuery(sql: jobHistory.Table.GetInsertQueries, parameters: null, source.Connection);
-
-                            if (affectedRowsCount > 0)
-                                logMessages.Add(messageAction(string.Format("{0} Transfered From {1} To {2}", targetDifference.ShippernetixId, target.Name, source.Name)));
-                            else
-                                logMessages.Add(messageAction(string.Format("An error occured while transfering job_History : {0}", targetDifference.ShippernetixId)));
-                        }
-                        catch (Exception ex)
-                        {
-
-                            Console.WriteLine(targetDifference.ShippernetixId + " " + ex.Message);
-                        }
-
+                        taskList.Add(new Task(action));
                 }
         }
 
@@ -445,72 +463,85 @@ namespace Synchronizer.Shippernetix
             {
                     taskList.Clear();
 
-                    source.Reconnect();
-                    target.Reconnect();
-
                     foreach (var targetDifference in lastTargetRecords)
                     {
-                        var jobHistory = new Job_History(targetDifference.Je_CallSign.ToString(),
-                                        targetDifference.Je_L1.ToString(),
-                                        targetDifference.Je_L2.ToString(),
-                                        targetDifference.Je_L3.ToString(),
-                                        targetDifference.Je_L4.ToString(),
-                                        targetDifference.Je_JobCode.ToString(),
-                                        targetDifference.Je_JobNo.ToString(),
-                                        targetColumnListDifferentWithSource,
-                                        target.Connection,
-                                        target.PrepareForVesselSide);
+                        Console.WriteLine($"Target Difference is syncing : {targetDifference.ShippernetixId}");
 
-                        if (jobHistory == null)
-                            continue;
-
-                        var previousJobNumber = Convert.ToInt32(targetDifference.Je_JobNo) - 1;
-
-                        previousJobNumber = previousJobNumber == 0 ? 1 : previousJobNumber;
-
-                        Job_History previousJobHistory = null;
-
-
-                        if(Job_History.Any(targetDifference.Je_CallSign.ToString(),
-                            targetDifference.Je_L1.ToString(),
-                            targetDifference.Je_L2.ToString(),
-                            targetDifference.Je_L3.ToString(),
-                            targetDifference.Je_L4.ToString(),
-                            targetDifference.Je_JobCode.ToString(),
-                            previousJobNumber.ToString(),
-                            target.Connection))
+                        Action action = new Action(() =>
                         {
-                            if (previousJobNumber > 0)
-                                previousJobHistory = new Job_History(targetDifference.Je_CallSign.ToString(),
-                                            targetDifference.Je_L1.ToString(),
-                                            targetDifference.Je_L2.ToString(),
-                                            targetDifference.Je_L3.ToString(),
-                                            targetDifference.Je_L4.ToString(),
-                                            targetDifference.Je_JobCode.ToString(),
-                                            previousJobNumber.ToString(),
-                                            targetColumnListDifferentWithSource,
-                                            target.Connection,
-                                            target.PrepareForVesselSide);
-                        }
+                            lock (LastTargetRecordsLockObject)
+                            {
+                                source.Reconnect();
+                                target.Reconnect();
+
+                                var jobHistory = new Job_History(targetDifference.Je_CallSign.ToString(),
+                                    targetDifference.Je_L1.ToString(),
+                                    targetDifference.Je_L2.ToString(),
+                                    targetDifference.Je_L3.ToString(),
+                                    targetDifference.Je_L4.ToString(),
+                                    targetDifference.Je_JobCode.ToString(),
+                                    targetDifference.Je_JobNo.ToString(),
+                                    targetColumnListDifferentWithSource,
+                                    target.Connection,
+                                    target.PrepareForVesselSide);
+
+                                if (jobHistory == null)
+                                    return;//continue;
+
+                                var previousJobNumber = Convert.ToInt32(targetDifference.Je_JobNo) - 1;
+
+                                previousJobNumber = previousJobNumber == 0 ? 1 : previousJobNumber;
+
+                                Job_History previousJobHistory = null;
 
 
-                        var affectedRowsCount = SqlManager.ExecuteNonQuery(sql: jobHistory.Table.GetInsertQueries, parameters: null, source.Connection);
+                                if (Job_History.Any(targetDifference.Je_CallSign.ToString(),
+                                    targetDifference.Je_L1.ToString(),
+                                    targetDifference.Je_L2.ToString(),
+                                    targetDifference.Je_L3.ToString(),
+                                    targetDifference.Je_L4.ToString(),
+                                    targetDifference.Je_JobCode.ToString(),
+                                    previousJobNumber.ToString(),
+                                    target.Connection))
+                                {
+                                    if (previousJobNumber > 0)
+                                        previousJobHistory = new Job_History(targetDifference.Je_CallSign.ToString(),
+                                                    targetDifference.Je_L1.ToString(),
+                                                    targetDifference.Je_L2.ToString(),
+                                                    targetDifference.Je_L3.ToString(),
+                                                    targetDifference.Je_L4.ToString(),
+                                                    targetDifference.Je_JobCode.ToString(),
+                                                    previousJobNumber.ToString(),
+                                                    targetColumnListDifferentWithSource,
+                                                    target.Connection,
+                                                    target.PrepareForVesselSide);
+                                }
 
-                        if (affectedRowsCount > 0)
-                            logMessages.Add(messageAction(string.Format("{0} Transfered From {1} To {2}", targetDifference.ShippernetixId, target.Name, source.Name)));
-                        else
-                            logMessages.Add(messageAction(string.Format("An error occured while transfering job_History : {0}", targetDifference.ShippernetixId)));
 
-                        if (previousJobNumber < 1 || previousJobHistory==null)
-                            continue;
+                                var affectedRowsCount = SqlManager.ExecuteNonQuery(sql: jobHistory.Table.GetInsertQueries, parameters: null, source.Connection);
 
-                        var affectedRowsCount2 = SqlManager.ExecuteNonQuery(sql: previousJobHistory.Table.GetUpdateQueries, parameters: null, source.Connection);
+                                if (affectedRowsCount > 0)
+                                    logMessages.Add(messageAction(string.Format("{0} Transfered From {1} To {2}", targetDifference.ShippernetixId, target.Name, source.Name)));
+                                else
+                                    logMessages.Add(messageAction(string.Format("An error occured while transfering job_History : {0}", targetDifference.ShippernetixId)));
 
-                        if (affectedRowsCount2 > 0)
-                            logMessages.Add(messageAction(string.Format("{0} Updated From {1} To {2}", string.Format("{0}-{1}-{2}-{3}-{4}-{5}-{6}", targetDifference.Je_CallSign, targetDifference.Je_L1, targetDifference.Je_L2, targetDifference.Je_L3, targetDifference.Je_L4, targetDifference.Je_JobCode, previousJobNumber), target.Name, source.Name)));
-                        else
-                            logMessages.Add(messageAction(string.Format("An error occured while transfering job_History : {0}", targetDifference.ShippernetixId)));
+                                if (previousJobNumber < 1 || previousJobHistory == null)
+                                    return;
+
+                                var affectedRowsCount2 = SqlManager.ExecuteNonQuery(sql: previousJobHistory.Table.GetUpdateQueries, parameters: null, source.Connection);
+
+                                if (affectedRowsCount2 > 0)
+                                    logMessages.Add(messageAction(string.Format("{0} Updated From {1} To {2}", string.Format("{0}-{1}-{2}-{3}-{4}-{5}-{6}", targetDifference.Je_CallSign, targetDifference.Je_L1, targetDifference.Je_L2, targetDifference.Je_L3, targetDifference.Je_L4, targetDifference.Je_JobCode, previousJobNumber), target.Name, source.Name)));
+                                else
+                                    logMessages.Add(messageAction(string.Format("An error occured while transfering job_History : {0}", targetDifference.ShippernetixId)));
+                            }
+
+                        });
+
+                        taskList.Add(new Task(action));
                     }
+
+                    taskList.ForEach(t=>t.Start());
             }
 
 

@@ -196,7 +196,8 @@ namespace Synchronizer
             //    t.Start();
             //}
             ////Evrim Bey İstek End
-
+            ///
+            //Shippernetix.Job_History.ReCalculateLastJob(new MsSqlConnection(connectionString: "MsSqlConnectionString"),"9VLE","6","1","5","1","A",actionToWorkWithLastCompletedJob: null);
 
 
             //Shippernetix.Job_History.FixFromVesselToOffice("9VLU","13","1","23","1","C","3");
@@ -437,110 +438,11 @@ namespace Synchronizer
                         if (isSourceConnected && istargetConnected)
                         {
                             var maxDataPackage = SqlManager.ExecuteScalar("select max(CAST(Dr_PacketNo as int)) from Data_Receive where Dr_PrepareOwnerCode=@CallSign", new Dictionary<string, object>()
-                    {
-                        {"CallSign",vessel.CallSign }
-                    }, connection: target.Connection);
-
-                            #region Delete Unwanted job which reaches max job number before previous one is completed
-
-                            var sqlToClear = "select x.*from( " +
-                                "select jh.*, " +
-                                "(select max(Je_JobNo) from Job_History where Je_CallSign = jh.Je_CallSign and Je_L1 = jh.Je_L1 and Je_L2 = jh.Je_L2 and Je_L3 = jh.Je_L3 and Je_L4 = jh.Je_L4 and Je_JobCode = jh.Je_JobCode) as MaxJobNumber " +
-                                "from Job_History jh " +
-                                "where jh.Je_CallSign = @CallSign )x where x.Je_JobNo = x.MaxJobNumber - 1 and x.Je_Status <> 'COMPLETED' ";
-
-                            var sourceRecordsToClear = SqlManager.ExecuteQuery(sqlToClear, new Dictionary<string, object>()
-                    {
-                        {"CallSign",vessel.CallSign }
-                    }, source.Connection)
-                           .Select(d => new
-                           {
-                               ShippernetixId = string.Format("{0}-{1}-{2}-{3}-{4}-{5}-{6}", d["Je_CallSign"], d["Je_L1"], d["Je_L2"], d["Je_L3"], d["Je_L4"], d["Je_JobCode"], d["Je_JobNo"]),
-                               Je_CallSign = d["Je_CallSign"],
-                               Je_L1 = d["Je_L1"],
-                               Je_L2 = d["Je_L2"],
-                               Je_L3 = d["Je_L3"],
-                               Je_L4 = d["Je_L4"],
-                               Je_JobCode = d["Je_JobCode"],
-                               Je_JobNo = d["Je_JobNo"],
-                               MaxJobNumber = d["MaxJobNumber"]
-                           })
-                        .ToList();
-
-                            foreach (var item in sourceRecordsToClear)
-                            {
-                                Console.WriteLine("{0} is deleted : {1}", item.MaxJobNumber,
-                                    SqlManager.ExecuteNonQuery("delete from Job_History where Je_CallSign=@Je_CallSign and Je_L1=@Je_L1 and Je_L2=@Je_L2 and Je_L3=@Je_L3 and Je_L4=@Je_L4 and Je_JobCode=@Je_JobCode and Je_JobNo=@MaxJobNo",
-                                    new Dictionary<string, object>()
                                     {
-                                {"Je_CallSign",item.Je_CallSign },
-                                {"Je_L1", item.Je_L1},
-                                {"Je_L2", item.Je_L2},
-                                {"Je_L3", item.Je_L3},
-                                {"Je_L4", item.Je_L4},
-                                {"Je_JobCode", item.Je_JobCode},
-                                {"MaxJobNo",item.MaxJobNumber }
-                                    }, source.Connection));
-                            }
+                                        {"CallSign",vessel.CallSign }
+                                    }, connection: target.Connection);
 
-
-                            var targetRecordsToClear = SqlManager.ExecuteQuery(sqlToClear, new Dictionary<string, object>()
-                    {
-                        {"CallSign",vessel.CallSign }
-                    }, target.Connection)
-                                                   .Select(d => new
-                                                   {
-                                                       ShippernetixId = string.Format("{0}-{1}-{2}-{3}-{4}-{5}-{6}", d["Je_CallSign"], d["Je_L1"], d["Je_L2"], d["Je_L3"], d["Je_L4"], d["Je_JobCode"], d["Je_JobNo"]),
-                                                       Je_CallSign = d["Je_CallSign"],
-                                                       Je_L1 = d["Je_L1"],
-                                                       Je_L2 = d["Je_L2"],
-                                                       Je_L3 = d["Je_L3"],
-                                                       Je_L4 = d["Je_L4"],
-                                                       Je_JobCode = d["Je_JobCode"],
-                                                       Je_JobNo = d["Je_JobNo"],
-                                                       MaxJobNumber = d["MaxJobNumber"]
-                                                   })
-                                .ToList();
-
-                            foreach (var item in targetRecordsToClear)
-                            {
-                                Console.WriteLine("{0} is deleted : {1}", item.MaxJobNumber,
-                                        SqlManager.ExecuteNonQuery("delete from Job_History where Je_CallSign=@Je_CallSign and Je_L1=@Je_L1 and Je_L2=@Je_L2 and Je_L3=@Je_L3 and Je_L4=@Je_L4 and Je_JobCode=@Je_JobCode and Je_JobNo=@MaxJobNo",
-                                        new Dictionary<string, object>()
-                                        {
-                                                            {"Je_CallSign",item.Je_CallSign },
-                                                            {"Je_L1", item.Je_L1},
-                                                            {"Je_L2", item.Je_L2},
-                                                            {"Je_L3", item.Je_L3},
-                                                            {"Je_L4", item.Je_L4},
-                                                            {"Je_JobCode", item.Je_JobCode},
-                                                            {"MaxJobNo",item.MaxJobNumber }
-                                        }, target.Connection));
-                            }
-
-                            #endregion
-
-
-                            Action<CustomConnection, string, string, string, string, string, string, string> actionForComplete = (cc, callSign, l1, l2, l3, l4, jobCode, jobNo) =>
-                            {
-                                var q = "update Job_History set Je_Status='COMPLETED' where Je_CallSign=@CallSign and Je_L1=@L1 and  Je_L2=@L2 and Je_L3=@L3 and Je_L4=@L4 and Je_JobCode=@JobCode and Je_JobNo=@JobNo";
-
-                                var isUpdated = SqlManager.ExecuteNonQuery(q,
-                                    new Dictionary<string, object>()
-                                    {
-                                {"CallSign", callSign},
-                                {"L1", l1},
-                                {"L2", l2},
-                                {"L3", l3},
-                                {"L4", l4},
-                                {"JobCode", jobCode},
-                                {"JobNo", jobNo},
-                                    },
-                                    cc);
-
-                                Console.WriteLine("isUpdated: " + isUpdated);
-                            };
-
+                        
                             Console.WriteLine("Fixing : From target to source");
 
                             var queryToFix = "  select z.* from(select y.*," +
@@ -576,6 +478,7 @@ namespace Synchronizer
                                 })
                                 .ToList();
 
+                            Console.WriteLine("queryToFix is working for Source");
                             var counter = 0;
                             foreach (var sourceItem in sourceList)
                             {
@@ -621,7 +524,7 @@ namespace Synchronizer
                             var targetList = SqlManager.ExecuteQuery(queryToFix,
                                 new Dictionary<string, object>()
                                 {
-                            { "CallSign",vessel.CallSign }
+                                    { "CallSign",vessel.CallSign }
                                 },
                                 target.Connection)
                                 .Select(d => new
@@ -677,6 +580,91 @@ namespace Synchronizer
                                 }
                                 Console.WriteLine(targetItem.ShippernetixId + " " + counter++);
                             }
+
+
+
+                            #region Delete Unwanted job which reaches max job number before previous one is completed
+
+                            var sqlToClear = "select x.*from( " +
+                                "select jh.*, " +
+                                "(select max(Je_JobNo) from Job_History where Je_CallSign = jh.Je_CallSign and Je_L1 = jh.Je_L1 and Je_L2 = jh.Je_L2 and Je_L3 = jh.Je_L3 and Je_L4 = jh.Je_L4 and Je_JobCode = jh.Je_JobCode) as MaxJobNumber " +
+                                "from Job_History jh " +
+                                "where jh.Je_CallSign = @CallSign )x where x.Je_JobNo = x.MaxJobNumber - 1 and x.Je_Status <> 'COMPLETED' ";
+
+                            var sourceRecordsToClear = SqlManager.ExecuteQuery(sqlToClear, new Dictionary<string, object>()
+                                {
+                                    {"CallSign",vessel.CallSign }
+                                }, source.Connection)
+                           .Select(d => new
+                           {
+                               ShippernetixId = string.Format("{0}-{1}-{2}-{3}-{4}-{5}-{6}", d["Je_CallSign"], d["Je_L1"], d["Je_L2"], d["Je_L3"], d["Je_L4"], d["Je_JobCode"], d["Je_JobNo"]),
+                               Je_CallSign = d["Je_CallSign"],
+                               Je_L1 = d["Je_L1"],
+                               Je_L2 = d["Je_L2"],
+                               Je_L3 = d["Je_L3"],
+                               Je_L4 = d["Je_L4"],
+                               Je_JobCode = d["Je_JobCode"],
+                               Je_JobNo = d["Je_JobNo"],
+                               MaxJobNumber = d["MaxJobNumber"]
+                           })
+                        .ToList();
+
+                            Console.WriteLine("sqlToClear is working for Source");
+                            foreach (var item in sourceRecordsToClear)
+                            {
+                                Console.WriteLine("{0},item.MaxJobNumber : {1} is deleted : {2}", item.ShippernetixId, item.MaxJobNumber,
+                                    SqlManager.ExecuteNonQuery("delete from Job_History where Je_CallSign=@Je_CallSign and Je_L1=@Je_L1 and Je_L2=@Je_L2 and Je_L3=@Je_L3 and Je_L4=@Je_L4 and Je_JobCode=@Je_JobCode and Je_JobNo=@MaxJobNo",
+                                    new Dictionary<string, object>()
+                                    {
+                                {"Je_CallSign",item.Je_CallSign },
+                                {"Je_L1", item.Je_L1},
+                                {"Je_L2", item.Je_L2},
+                                {"Je_L3", item.Je_L3},
+                                {"Je_L4", item.Je_L4},
+                                {"Je_JobCode", item.Je_JobCode},
+                                {"MaxJobNo",item.MaxJobNumber }
+                                    }, source.Connection));
+                            }
+
+
+                            var targetRecordsToClear = SqlManager.ExecuteQuery(sqlToClear, new Dictionary<string, object>()
+                                    {
+                                        {"CallSign",vessel.CallSign }
+                                    }, target.Connection)
+                                                   .Select(d => new
+                                                   {
+                                                       ShippernetixId = string.Format("{0}-{1}-{2}-{3}-{4}-{5}-{6}", d["Je_CallSign"], d["Je_L1"], d["Je_L2"], d["Je_L3"], d["Je_L4"], d["Je_JobCode"], d["Je_JobNo"]),
+                                                       Je_CallSign = d["Je_CallSign"],
+                                                       Je_L1 = d["Je_L1"],
+                                                       Je_L2 = d["Je_L2"],
+                                                       Je_L3 = d["Je_L3"],
+                                                       Je_L4 = d["Je_L4"],
+                                                       Je_JobCode = d["Je_JobCode"],
+                                                       Je_JobNo = d["Je_JobNo"],
+                                                       MaxJobNumber = d["MaxJobNumber"]
+                                                   })
+                                .ToList();
+
+                            Console.WriteLine("sqlToClear is working for Target");
+                            foreach (var item in targetRecordsToClear)
+                            {
+                                Console.WriteLine("{0},item.MaxJobNumber : {1} is deleted : {2}", item.ShippernetixId, item.MaxJobNumber,
+                                        SqlManager.ExecuteNonQuery("delete from Job_History where Je_CallSign=@Je_CallSign and Je_L1=@Je_L1 and Je_L2=@Je_L2 and Je_L3=@Je_L3 and Je_L4=@Je_L4 and Je_JobCode=@Je_JobCode and Je_JobNo=@MaxJobNo",
+                                        new Dictionary<string, object>()
+                                        {
+                                                            {"Je_CallSign",item.Je_CallSign },
+                                                            {"Je_L1", item.Je_L1},
+                                                            {"Je_L2", item.Je_L2},
+                                                            {"Je_L3", item.Je_L3},
+                                                            {"Je_L4", item.Je_L4},
+                                                            {"Je_JobCode", item.Je_JobCode},
+                                                            {"MaxJobNo",item.MaxJobNumber }
+                                        }, target.Connection));
+                            }
+
+                            #endregion
+
+
                         }
                         else
                         {

@@ -54,7 +54,7 @@ namespace SqlManagement
 
             Connection.ConnectionString = ConnectingString;
 
-            Connect();
+            //Connect();
         }
 
         public static void Start(Func<Dictionary<string,string>> connectionStringsProvider)

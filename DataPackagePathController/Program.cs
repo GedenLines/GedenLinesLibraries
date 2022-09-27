@@ -57,7 +57,6 @@ namespace DataPackagePathController
                 .SetContinuous(true)
                 .SetAction(()=> 
                 {
-
                     if (!SqlManager.CheckConnection(new MsSqlConnection(connectionString: "MsSqlConnectionString")))
                         Console.WriteLine("There is a database connection problem,please check config file");
                     else
@@ -265,6 +264,11 @@ namespace DataPackagePathController
                     Console.WriteLine($"Attachment Path is found : {attachmentPath}");
 
                     var attachmentFile = new CustomFile(path: attachmentPath, createNewIfNotExists: false);
+
+                    Console.WriteLine($"Attachment File -> Path : {attachmentPath}, Name : {attachmentFile.NameWithExtension},AttachmentFile.Data.Length : {attachmentFile.Data?.Length},LengthAsMb : {attachmentFile.LengthAsMb}");
+
+                    if (attachmentFile.Data == null || attachmentFile.Data?.Length == 0)
+                        continue;
 
                     var isSentSuccessfully = false;
 
