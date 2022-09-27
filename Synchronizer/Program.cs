@@ -117,6 +117,18 @@ namespace Synchronizer
 
             Console.WriteLine();
 
+            Automat aoutTrigger = new Automat("Trigger Checked", "Trigger Checked");
+            var regTrigger = new Job("Trigger Checked")
+                .SetInterval(seconds: 30)
+                .SetContinuous(true)
+                .SetAction(() =>
+                {
+                    TriggerEnableDisableController();
+                });
+
+            aoutTrigger.AddJob(regTrigger);
+
+
             //Job_History.ReCalculateLastJob(new MsSqlConnection(connectionString: "MsSqlConnectionString"), "9BRV","7","3","2","1","C",actionToWorkWithLastCompletedJob:null);
             //Job_History.ReCalculateLastJob(new MsSqlConnection(connectionString: "MsSqlConnectionString"), "9BRV", "3", "19", "1", "1", "A", actionToWorkWithLastCompletedJob: null);
 
@@ -261,7 +273,7 @@ namespace Synchronizer
 
 
             //Shippernetix.Job_History.FixFromVesselToOffice("9ALF", "14", "3", "1", "1", "B", "1");
-           // Console.WriteLine();
+            // Console.WriteLine();
             //Shippernetix.Job_History.FixFromVesselToOffice("9RYL", "12", "1", "2", "1", "Def-939", "1");
             //Shippernetix.Job_History.FixFromVesselToOffice("9RYL", "13", "1", "29", "1", "A", "1");
             //Shippernetix.Job_History.FixFromVesselToOffice("9RYL", "13", "1", "9", "2", "A", "136");
@@ -953,6 +965,55 @@ namespace Synchronizer
             .PrepareUpdateAndInsertQueries();
 
             var affectedRowsCount = SqlManager.ExecuteNonQuery(sql: spares.GetUpdateQueries, parameters: null, targetConnection);
+        }
+
+        public static void TriggerEnableDisableController()
+        {
+           
+
+             var vessels = Vessel_Master.Vessels;
+          
+            int dpReciveVesselnum = 0;
+            string mailMessage = $"<p>Date = {DateTime.Now}</p>";
+                foreach (var vessel in vessels)
+                {
+                    var target = new Side(vessel.Name, vessel.CallSign, true);
+                    var connected = 1;
+
+                    if (SqlManager.CheckConnection(target.Connection))
+                    {
+                        var disabledTriggerQuery = "SELECT count(name) qty FROM sys.triggers where name ='Job_History_Edit' and is_disabled = 1 group by name, is_disabled";
+
+                        var count = SqlManager.ExecuteQuery(disabledTriggerQuery,
+                            parameters: null,
+                            target.Connection)
+                            .Select(d => new
+                            {
+                                DisabledTriggerCount = d["qty"]
+                            })
+                            .FirstOrDefault();
+
+                        if (count != null)
+                        {
+
+                            mailMessage += connected == 0 || dpReciveVesselnum == 0 ? "" : "";
+                            mailMessage += $"";
+                            mailMessage += $"{vessel.CallSign} ";
+                            mailMessage += $"{vessel.Name} ";
+
+                        mailMessage += " Job History Edit Trigger is Disabled";
+                            SendMail("Job History Edit Trigger ", mailMessage);
+
+                        }
+                        else
+                        {
+
+                        }
+
+
+                    }
+                }
+            
         }
 
         public static int ExecuteNonQueryOn(MsSqlConnection msSqlConnection, string sql, Dictionary<string, object> parameters = null)
