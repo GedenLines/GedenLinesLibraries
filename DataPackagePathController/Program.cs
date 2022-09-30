@@ -52,10 +52,10 @@ namespace DataPackagePathController
 
             Automat automat = new Automat("DataPackagePathController Automat", "Receiving or Sending Data Packages Using Exchange");
 
-            var receivingDataJob = new Job("Receive Data")
+            var receivingDataJob = new AutomatJob("Receive Data")
                 .SetInterval(minutes:IntervalToReceiveDataAsMinute)
                 .SetContinuous(true)
-                .SetAction(()=> 
+                .SetAction((j)=> 
                 {
                     if (!SqlManager.CheckConnection(new MsSqlConnection(connectionString: "MsSqlConnectionString")))
                         Console.WriteLine("There is a database connection problem,please check config file");
@@ -70,17 +70,17 @@ namespace DataPackagePathController
                             Console.WriteLine(ex);
                         }
 
-                        foreach (var job in Job.Jobs)
+                        foreach (var job in AutomatJob.Jobs)
                         {
                             Console.WriteLine($"'{job.Name}' is gonna work at {job.NextWorkDate}(it worked last time {job.LastWorkDate})");
                         }
                     }
                 });
 
-            var sendingDataJob = new Job("Send Data")
+            var sendingDataJob = new AutomatJob("Send Data")
                 .SetInterval(minutes: IntervalToSendDataAsMinute)
                 .SetContinuous(true)
-                .SetAction(()=>
+                .SetAction((j)=>
                 {
                     if (!SqlManager.CheckConnection(new MsSqlConnection(connectionString: "MsSqlConnectionString")))
                         Console.WriteLine("There is a database connection problem,please check config file");
@@ -96,16 +96,16 @@ namespace DataPackagePathController
                         }
                     }
 
-                    foreach (var job in Job.Jobs)
+                    foreach (var job in AutomatJob.Jobs)
                     {
                         Console.WriteLine($"{job.Name} is gonna work at {job.NextWorkDate}(it worked last time {job.LastWorkDate})");
                     }
                 });
 
-            var requestObserver = new Job("Request Observer")
+            var requestObserver = new AutomatJob("Request Observer")
                 .SetInterval(seconds: IntervalToCheckRequestsAsSeconds)
                 .SetContinuous(true)
-                .SetAction(()=> 
+                .SetAction((j)=> 
                 {
                     if (!SqlManager.CheckConnection(new MsSqlConnection(connectionString: "MsSqlConnectionString")))
                         Console.WriteLine("There is a database connection problem,please check config file");
@@ -140,7 +140,7 @@ namespace DataPackagePathController
             automat.AddJob(receivingDataJob);
             automat.AddJob(sendingDataJob);
 
-            Service.Start();
+            AutomatService.Start();
 
             Console.WriteLine("Press any key to exit...");
             Console.ReadLine();

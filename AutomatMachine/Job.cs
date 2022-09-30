@@ -14,12 +14,13 @@ namespace AutomatMachine
         Stopped,
         Successful,
         WaitingForChildrenToComplete,
-        WaitingToRun
+        WaitingToRun,
+        Tasking
     }
 
     public class JobLog
     {
-        public Job Job { get; set; }
+        public AutomatJob Job { get; set; }
 
         public string ClassName { get; set; }
 
@@ -39,9 +40,9 @@ namespace AutomatMachine
         }
     }
 
-    public class Job
+    public class AutomatJob
     {
-        public static List<Job> Jobs = new List<Job>();
+        public static List<AutomatJob> Jobs = new List<AutomatJob>();
 
         public Guid Id { get; set; }
 
@@ -51,9 +52,9 @@ namespace AutomatMachine
 
         public Automat Automat { get; set; }
 
-        public Action Action { get; set; }
+        public Action<AutomatJob> Action { get; set; }
 
-        public Job ContinueWith { get; set; }
+        public AutomatJob ContinueWith { get; set; }
 
         public double Interval { get; set; }
 
@@ -64,11 +65,13 @@ namespace AutomatMachine
         public JobState JobState { get; set; }
         public int NumberOfWorking { get; set; }
 
+        private bool OnlyWorkOnDeployment { get; set; }
+
         public List<JobLog> JobLogs = new List<JobLog>();
 
         #region Constructor
 
-        public Job(string name, int interval = 1000, Guid? id = null, bool isContinuous = false)
+        public AutomatJob(string name, int interval = 1000, Guid? id = null, bool isContinuous = false)
         {
             Name = name;
 
@@ -87,7 +90,7 @@ namespace AutomatMachine
 
         #region Functions
 
-        public Job AddLog(JobLog jobLog)
+        public AutomatJob AddLog(JobLog jobLog)
         {
             JobLogs.Add(jobLog);
 
@@ -96,18 +99,47 @@ namespace AutomatMachine
             return this;
         }
 
-        public Job SetInterval(int days = 0, int hours = 0, int minutes = 0, int seconds = 0, int miliseconds = 0)
+        public AutomatJob SetInterval(int days = 0, int hours = 0, int minutes = 0, int seconds = 0, int miliseconds = 0, TimeSpan? initTime = null)
         {
             TimeSpan ts = new TimeSpan(days, hours, minutes, seconds, miliseconds);
 
             Interval = ts.TotalMilliseconds;
 
-            NextWorkDate = DateTime.Now.AddMilliseconds(Interval);
+            var dateTimeNow = DateTime.Now;
+            var dateTimeWithInterval = dateTimeNow.AddMilliseconds(Interval);
+
+            if (initTime != null)
+            {
+                //TimeSpan durationToCompleteDay = (dateTimeNow.Date + new TimeSpan(23, 59, 0)).TimeOfDay.Subtract(dateTimeNow.AddMilliseconds(Interval).TimeOfDay);
+                //TimeSpan duration = new TimeSpan(24, 0, 0).Subtract(dateTimeNow.TimeOfDay);
+
+                TimeSpan durationToCompleteDay = (dateTimeNow.Date + new TimeSpan(23, 59, 0)).Subtract(dateTimeWithInterval);
+
+                //if (dateTimeNow.Hour > initTime.Value.Hours)
+                //{
+
+                //}
+
+                if (dateTimeWithInterval < dateTimeNow.AddDays(1).Date && durationToCompleteDay.TotalMilliseconds > 0)
+                {
+                    if (initTime < dateTimeNow.TimeOfDay)
+                        dateTimeNow = dateTimeNow.AddDays(1);
+                }
+                else
+                {
+                    if (initTime < dateTimeNow.TimeOfDay)
+                        dateTimeNow = dateTimeNow.AddMilliseconds(Interval);
+                }
+
+                NextWorkDate = dateTimeNow.Date + initTime.Value;
+            }
+            else
+                NextWorkDate = dateTimeWithInterval;
 
             return this;
         }
 
-        public Job SetAction(Action action)
+        public AutomatJob SetAction(Action<AutomatJob> action)
         {
             Action = action;
 
@@ -116,64 +148,73 @@ namespace AutomatMachine
 
         private static object AutomatJobActionLockObject = new object();
 
-        public Job Invoke()
+        public AutomatJob Invoke()
         {
-            if(JobState==AutomatMachine.JobState.Successful || JobState==AutomatMachine.JobState.Failed)
+            lock (AutomatJobActionLockObject)
             {
-                if (!IsContinuous)
+                if (JobState == AutomatMachine.JobState.Running)
                     return this;
-            }
 
-            if (JobState == AutomatMachine.JobState.Running)
-                return this;
-
-            if (Action != null)
-            {
-                lock (AutomatJobActionLockObject)
+                if (JobState == AutomatMachine.JobState.Successful || JobState == AutomatMachine.JobState.Failed)
                 {
-                    if (Action != null)
+                    if (!IsContinuous)
+                        return this;
+                }
+
+                if (Action != null)
+                {
+                    try
                     {
-                        try
+                        JobState = JobState.Running;
+
+                        if (OnlyWorkOnDeployment)
                         {
-                            JobState = global::AutomatMachine.JobState.Running;
-
-                            Action.Invoke();
-
-                            LastWorkDate = DateTime.Now;
-
-                            NextWorkDate = DateTime.Now.AddMilliseconds(Interval);
-
-                            NumberOfWorking++;
-
-                            JobState = global::AutomatMachine.JobState.Successful;
+                            if (!new string[] { "KARAR", "TASLAN", "REA", "egecgin" }.Contains(Environment.UserName))
+                            {
+                                Action.Invoke(this);
+                            }
                         }
-                        catch (Exception ex)
+                        else
                         {
-                            Console.WriteLine(ex);
-
-                            JobState = global::AutomatMachine.JobState.Failed;
+                            Action.Invoke(this);
                         }
+
+                        LastWorkDate = DateTime.Now;
+
+                        NextWorkDate = DateTime.Now.AddMilliseconds(Interval);
+
+                        NumberOfWorking++;
+
+                        JobState = JobState.Successful;
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine(ex);
+
+                        JobState = JobState.Failed;
                     }
                 }
-            }
 
-            return this;
+                return this;
+            }
         }
 
 
-        public virtual Job Run()
+        public virtual AutomatJob Run()
         {
             Invoke();
 
             if (ContinueWith != null)
-                Task.Run(()=>ContinueWith.RunAsync());
+                Task.Run(() => ContinueWith.RunAsync());
 
             return this;
         }
 
-        public virtual async Task<Job> RunAsync()
+        public virtual async Task<AutomatJob> RunAsync()
         {
-            var task = new Task<Job>(new Func<Job>(Invoke));
+            JobState = JobState.Tasking;
+
+            var task = new Task<AutomatJob>(new Func<AutomatJob>(Invoke));
 
             task.Start();
 
@@ -208,18 +249,25 @@ namespace AutomatMachine
 
             return this;
         }
- 
 
-        public Job Stop()
+
+        public AutomatJob Stop()
         {
-            JobState = global::AutomatMachine.JobState.Stopped;
+            JobState = JobState.Stopped;
 
             return this;
         }
 
-        public Job SetContinuous(bool enable)
+        public AutomatJob SetContinuous(bool enable)
         {
             IsContinuous = enable;
+
+            return this;
+        }
+
+        public AutomatJob OnlyWorkOnDeploymentMode()
+        {
+            OnlyWorkOnDeployment = true;
 
             return this;
         }

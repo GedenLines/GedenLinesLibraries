@@ -22,11 +22,11 @@ namespace AutomatMachine
 
         //public List<Job> Jobs { get; set; }
 
-        public List<Job> Jobs
+        public List<AutomatJob> Jobs
         {
             get
             {
-                return Job.Jobs;
+                return AutomatJob.Jobs;
             }
         }
 
@@ -36,7 +36,7 @@ namespace AutomatMachine
 
         public Automat() { }
 
-        public Automat(string name,string description)
+        public Automat(string name, string description)
         {
             Name = name;
 
@@ -63,7 +63,7 @@ namespace AutomatMachine
 
         #region Functions
 
-        public Automat AddJob(Job job)
+        public Automat AddJob(AutomatJob job)
         {
             job.Automat = this;
 
