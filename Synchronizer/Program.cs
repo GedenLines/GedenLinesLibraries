@@ -643,8 +643,8 @@ namespace Synchronizer
                         "9ALV",config.GetConnectionString("9ALV")
                     },
                     {
-                        "DECK",
-                        "Data Source=172.22.23.52; Initial Catalog = GENEL; User Id = sa; Password = '';"
+                        "9VRD",
+                        "Data Source=172.22.23.58; Initial Catalog = GENEL; User Id = sa; Password = '';"
                     }
                 };
             });
