@@ -44,6 +44,13 @@ namespace AutomatMachine
 
                     isFixedToNow = true;
                 }
+                else if (job.IsContinuous && job.NextWorkDate.Value < dateTimeNow && job.Interval < TimeSpan.FromMinutes(60).TotalMilliseconds)
+                {
+                    job.NextWorkDate = dateTimeNow;
+
+                    isFixedToNow = true;
+                }
+
 
                 var year = job.NextWorkDate.Value.Year;
                 var month = job.NextWorkDate.Value.Month;
