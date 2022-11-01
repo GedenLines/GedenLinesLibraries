@@ -70,8 +70,10 @@ namespace Synchronizer
 
             aoutTrigger.AddJob(regTrigger);
 
-            //fixJobRuntime_Source();
-            //FixPospenedJobs();
+
+            //Defect.FixFromVesselToOffice("9REF", "Def-1151");
+
+
             Console.Write("For Synchronizer enter 1 \nFor Manuel DataPackage Mailer enter 2 \nFor Run Automat DataPackage Mailer Enter 3 \n");
             var status = int.Parse(Console.ReadLine());
             if (status == 1)

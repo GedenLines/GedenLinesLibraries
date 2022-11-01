@@ -54,6 +54,8 @@ namespace AutomatMachine
 
         public Action<AutomatJob> Action { get; set; }
 
+        public AutomatJob Parent { get; set; }
+
         public AutomatJob ContinueWith { get; set; }
 
         public double Interval { get; set; }
@@ -66,6 +68,8 @@ namespace AutomatMachine
         public int NumberOfWorking { get; set; }
 
         private bool OnlyWorkOnDeployment { get; set; }
+
+        public string ControlString { get; set; }
 
         public List<JobLog> JobLogs = new List<JobLog>();
 
@@ -268,6 +272,21 @@ namespace AutomatMachine
         public AutomatJob OnlyWorkOnDeploymentMode()
         {
             OnlyWorkOnDeployment = true;
+
+            return this;
+        }
+
+        public AutomatJob SetContinueWith(Action<AutomatJob> action, bool isContinuous = false)
+        {
+            var actionToSet = new Action<AutomatJob>((j) =>
+            {
+                action.Invoke(this);
+            });
+
+            ContinueWith = new AutomatJob(name: $"{Name}.ContinueWith", isContinuous: isContinuous)
+                .SetAction(actionToSet);
+
+            ContinueWith.Parent = this;
 
             return this;
         }

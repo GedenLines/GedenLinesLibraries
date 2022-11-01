@@ -53,10 +53,13 @@ namespace DataPackagePathController
             Automat automat = new Automat("DataPackagePathController Automat", "Receiving or Sending Data Packages Using Exchange");
 
             var receivingDataJob = new AutomatJob("Receive Data")
-                .SetInterval(minutes:IntervalToReceiveDataAsMinute)
+                //.SetInterval(minutes:IntervalToReceiveDataAsMinute)
+                .SetInterval(minutes: IntervalToReceiveDataAsMinute, initTime: new TimeSpan(DateTime.Now.Hour, DateTime.Now.Minute, DateTime.Now.Second + 5))
                 .SetContinuous(true)
                 .SetAction((j)=> 
                 {
+                    Console.WriteLine("");
+
                     if (!SqlManager.CheckConnection(new MsSqlConnection(connectionString: "MsSqlConnectionString")))
                         Console.WriteLine("There is a database connection problem,please check config file");
                     else
@@ -82,6 +85,9 @@ namespace DataPackagePathController
                 .SetContinuous(true)
                 .SetAction((j)=>
                 {
+                    Console.WriteLine("");
+
+
                     if (!SqlManager.CheckConnection(new MsSqlConnection(connectionString: "MsSqlConnectionString")))
                         Console.WriteLine("There is a database connection problem,please check config file");
                     else
@@ -107,6 +113,8 @@ namespace DataPackagePathController
                 .SetContinuous(true)
                 .SetAction((j)=> 
                 {
+                    Console.WriteLine("");
+
                     if (!SqlManager.CheckConnection(new MsSqlConnection(connectionString: "MsSqlConnectionString")))
                         Console.WriteLine("There is a database connection problem,please check config file");
                     else
@@ -137,8 +145,17 @@ namespace DataPackagePathController
                     }
                 });
 
+            AutomatJob publishJob = new AutomatJob(name: "Publishing")
+                       .SetContinuous(true)
+                       .SetInterval(hours: 1, initTime: new TimeSpan(DateTime.Now.Hour, DateTime.Now.Minute, DateTime.Now.Second + 5))
+                       .SetAction((j) =>
+                       {
+                           PublishingMail(j);
+                       });
+
             automat.AddJob(receivingDataJob);
             automat.AddJob(sendingDataJob);
+            automat.AddJob(publishJob);
 
             AutomatService.Start();
 
@@ -359,6 +376,48 @@ namespace DataPackagePathController
             });
 
             new MailManager("mail.gedenlines.com", 25, "shippernetix@gedenlines.com", "", "GedenErp", false);
+        }
+
+        private static void PublishingMail(AutomatJob job)
+        {
+            var html = $"DateTime.Now : {DateTime.Now},Environment Name : {Environment.UserName},job.Name : {job.Name},job.Interval : {job.Interval},job.LastWorkDate : {job.LastWorkDate},job.NextWorkDate : {job.NextWorkDate}";
+
+            //var fromTimeSpanTo2DigitsString = new Func<TimeSpan, string>((ts) =>
+            // {
+            //     return $"{ts.Days} : {string.Format("{0:00}", ts.Hours)}:{string.Format("{0:00}", ts.Minutes)}:{string.Format("{0:00}", ts.Seconds)}";
+            // });
+
+
+            foreach (var automatJobGroup in AutomatJob.Jobs.Where(j => j.Parent == null).GroupBy(g => g.Interval))
+            {
+                html += "<br/>";
+                html += $"<h2>{automatJobGroup.Key}</h2>";
+                html += "<ul>";
+
+                var counter = 0;
+                var bgColor = "";
+                var textColor = "black";
+
+                foreach (var groupMember in automatJobGroup)
+                {
+                    counter++;
+
+                    bgColor = counter % 2 != 0 ? "beige" : "white";
+                    //textColor = counter % 2 == 0 ? "black" : "black";
+
+                    html += $"<li style='background-color:{bgColor};color:{textColor}'>Name : <span style='color:green;'>{groupMember.Name}</span>,</br>Interval : {groupMember.Interval},</br>IsContinuous : {groupMember.IsContinuous},</br>State : {groupMember.JobState},</br>Last Work Date : {groupMember.LastWorkDate},</br>Next Work Date : {groupMember.NextWorkDate}</li>";
+                }
+
+                html += "</ul>";
+            }
+
+            var mailManager = new MailManager(o => o.Code == "GedenErp")
+                  .Prepare(new Mail(from: new MailAddress("gedenerp@gedenlines.com"),
+                                       to: new List<MailAddress>() { new MailAddress("karar@gedenlines.com") },
+                                       subject: $"Mail On Publishing(Data Package Controller)",
+                                       body: html));
+
+            mailManager.Send();
         }
     }
 }
