@@ -80,31 +80,6 @@ namespace DataPackagePathController
                     }
                 });
 
-            var testJob = new AutomatJob("DataPackageController Mail Tester")
-                .SetInterval(minutes:30)
-                .SetContinuous(true)
-                .SetAction((j) =>
-                {
-                    Console.WriteLine("");
-
-                    var mailManager = new MailManager(o => o.Code == "GedenErp")
-                                    .Prepare(new Mail(from: new MailAddress("shippernetix@gedenlines.com"),
-                                                         to: null,
-                                                         subject: $"DataPackageController Mail Tester",
-                                                         body: "Completed Jobs are attached.")
-                                                .AddTo(new MailAddress("karar@gedenlines.com")));
-
-                    var isSent = mailManager.Send((ex) =>
-                    {
-                        Console.WriteLine(ex.Message);
-                    });
-
-                    foreach (var job in AutomatJob.Jobs)
-                    {
-                        Console.WriteLine($"{job.Name} is gonna work at {job.NextWorkDate}(it worked last time {job.LastWorkDate})");
-                    }
-                });
-
             var sendingDataJob = new AutomatJob("Send Data")
                 .SetInterval(minutes: IntervalToSendDataAsMinute)
                 .SetContinuous(true)
