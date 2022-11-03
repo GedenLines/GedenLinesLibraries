@@ -27,6 +27,8 @@ namespace DataPackagePathController
 
         public static int IntervalToCheckRequestsAsSeconds { get; set; }
 
+        private static object RequestSenderLockObject { get; set; }
+
         static void Main(string[] args)
         {
             try
@@ -108,6 +110,9 @@ namespace DataPackagePathController
                     }
                 });
 
+
+            
+
             var requestObserver = new AutomatJob("Request Observer")
                 .SetInterval(seconds: IntervalToCheckRequestsAsSeconds)
                 .SetContinuous(true)
@@ -127,13 +132,19 @@ namespace DataPackagePathController
                             {
                                 if (!request.IsDone)
                                 {
-                                    switch (request.ProcessName)
+                                    lock (RequestSenderLockObject)
                                     {
-                                        case "Send":
+                                        if (!request.IsDone)
+                                        {
+                                            switch (request.ProcessName)
+                                            {
+                                                case "Send":
 
-                                            SendData(request);
+                                                    SendData(request);
 
-                                            break;
+                                                    break;
+                                            }
+                                        }
                                     }
                                 }
                             }
