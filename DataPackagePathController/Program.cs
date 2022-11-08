@@ -401,6 +401,7 @@ namespace DataPackagePathController
 
             foreach (var automatJobGroup in AutomatJob.Jobs.Where(j => j.Parent == null).GroupBy(g => g.Interval))
             {
+
                 html += "<br/>";
                 html += $"<h2>{automatJobGroup.Key}</h2>";
                 html += "<ul>";
@@ -411,6 +412,9 @@ namespace DataPackagePathController
 
                 foreach (var groupMember in automatJobGroup)
                 {
+                    if (groupMember.NextWorkDate < DateTime.Now.AddMinutes(-10))
+                        groupMember.NextWorkDate = DateTime.Now.AddSeconds(20);
+
                     counter++;
 
                     bgColor = counter % 2 != 0 ? "beige" : "white";
