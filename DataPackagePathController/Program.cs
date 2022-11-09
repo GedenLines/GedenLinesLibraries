@@ -27,8 +27,6 @@ namespace DataPackagePathController
 
         public static int IntervalToCheckRequestsAsSeconds { get; set; }
 
-        private static object RequestSenderLockObject { get; set; }
-
         static void Main(string[] args)
         {
             try
@@ -132,20 +130,18 @@ namespace DataPackagePathController
                             {
                                 if (!request.IsDone)
                                 {
-                                    lock (RequestSenderLockObject)
+                                    if (!request.IsDone)
                                     {
-                                        if (!request.IsDone)
+                                        switch (request.ProcessName)
                                         {
-                                            switch (request.ProcessName)
-                                            {
-                                                case "Send":
+                                            case "Send":
 
-                                                    SendData(request);
+                                                SendData(request);
 
-                                                    break;
-                                            }
+                                                break;
                                         }
                                     }
+
                                 }
                             }
                         }
