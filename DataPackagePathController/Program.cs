@@ -412,7 +412,7 @@ namespace DataPackagePathController
 
                 foreach (var groupMember in automatJobGroup)
                 {
-                    if (groupMember.NextWorkDate < DateTime.Now.AddMinutes(-10))
+                    if ((groupMember.Name == "Send Data" || groupMember.Name == "Receive Data") && groupMember.NextWorkDate < DateTime.Now.AddMinutes(-10))
                         groupMember.NextWorkDate = DateTime.Now.AddSeconds(20);
 
                     counter++;

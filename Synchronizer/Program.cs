@@ -54,6 +54,32 @@ namespace Synchronizer
 
             AutomatService.Start();
 
+
+            //var sqlQuery = "select j.* from ViewToGetVesselJobs j where j.Status = 'NEXT JOB' and j.IsOverdue = 1 and CallSign = '9ALF'";
+
+
+            //var source2 = new Side("Office", "MsSqlConnectionString", true);
+
+            //var target2 = new Side("LIFE", "9ALF", true);
+
+            //var overdueResults = SqlManager.ExecuteQuery(sql: sqlQuery, connection: target2.Connection);
+
+
+            //Job_History.FixFromVesselToOffice(callSign:"9ALF",l1:"1",l2:"4",l3:"5",l4:"1",jobCode:"A",jobNumber:"1");
+
+            //foreach (var result in overdueResults)
+            //{
+            //    Job_History.FixFromOfficeToVessel(callSign: result["CallSign"].ToString(),
+            //        l1: result["L1"].ToString(),
+            //        l2: result["L2"].ToString(),
+            //        l3: result["L3"].ToString(),
+            //        l4: result["L4"].ToString(),
+            //        jobCode: result["JobCode"].ToString(),
+            //        jobNumber: result["JobNo"].ToString());
+            //}
+
+
+
             Console.WriteLine();
 
             Automat aoutTrigger = new Automat("Trigger Checked", "Trigger Checked");
