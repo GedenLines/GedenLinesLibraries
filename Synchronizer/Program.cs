@@ -82,6 +82,8 @@ namespace Synchronizer
 
             Console.WriteLine();
 
+            
+
             Automat aoutTrigger = new Automat("Trigger Checked", "Trigger Checked");
             var regTrigger = new AutomatJob("Trigger Checked")
                 .SetInterval(minutes: 30)
@@ -669,9 +671,18 @@ namespace Synchronizer
                         "9ALV",config.GetConnectionString("9ALV")
                     },
                     {
-                        "9VRD",
-                        "Data Source=172.22.23.58; Initial Catalog = GENEL; User Id = sa; Password = '';"
+                        "9SWT",config.GetConnectionString("9SWT")
+                    },
+                    {
+                        "9VRD",config.GetConnectionString("9VRD")
+                    },
+                    {
+                        "9VCT",config.GetConnectionString("9VCT")
                     }
+                    //{
+                    //    "9VCT",
+                    //    "Data Source=172.22.23.58; Initial Catalog = GENEL; User Id = sa; Password = '';"
+                    //}
                 };
             });
 
@@ -744,6 +755,94 @@ namespace Synchronizer
                         Console.WriteLine("No disabled trigger found");
                     }
                 }
+            }
+        }
+
+        public static void FixPospenedJobs()
+        {
+            var source = new Side("Office", "MsSqlConnectionString", true);
+
+            var target = new Side("4 - M/T ADVANTAGE VALUE", "9VLE", true);
+            
+
+            var jobs = SqlManager.ExecuteQuery(sql: "select v.CallSign,v.VesselName,v.FullIdWithCallSign,v.IdWithoutJobNo,v.Status,v.IntType,v.Interval,v.IsOverdue,p.AddedDate as PostponeDate,p.[OldValue],p.[NewValue] " +
+                "from ViewToGetVesselJobs v " +
+                "inner join SecondPostponeRequest p on v.FullIdWithCallSign = p.JobInfo " +
+                "where v.CallSign = '9VLE' and MONTH(p.AddedDate) >= MONTH(DATEADD(MONTH, -1, GETDATE()))", connection: source.Connection);
+            foreach (var item in jobs)
+            {
+                var maxJobNo = SqlManager.ExecuteQuery(sql: "select max(JobNo) as MaxJobNo from ViewToGetVesselJobs where CallSign = @callsign and IdWithoutJobNo = @id", parameters: new Dictionary<string, object>()
+                {
+                    {"callsign",item["CallSign"].ToString() },
+                    {"id",item["IdWithoutJobNo"].ToString() }
+                }, connection: source.Connection).FirstOrDefault()["MaxJobNo"];
+
+                var JobArr = item["IdWithoutJobNo"].ToString().Split("-");
+
+                //Job_History.FixFromOfficeToVessel(callSign: item["CallSign"].ToString(),
+                //                                    l1: JobArr[0].ToString(),
+                //                                    l2: JobArr[1].ToString(),
+                //                                    l3: JobArr[2].ToString(),
+                //                                    l4: JobArr[3].ToString(),
+                //                                    jobCode: JobArr[4].ToString(),
+                //                                    jobNumber: maxJobNo.ToString());
+            }
+
+        }
+
+
+        public static void fixJobRuntime_Source()
+        {
+            var source = new Side("Office", "MsSqlConnectionString", true);
+
+            var target = new Side("1 - M/T ADVANTAGE SWEET", "9SWT", true);
+            var counter1 = 0;
+            var JobDefList = SqlManager.ExecuteQuery(sql: "select * from Job_Definition WHERE Jd_CallSign = '9SWT' AND Jd_IntType = 'COUNTER'", parameters: null, connection: source.Connection);
+            var str = "";
+
+            foreach (var item in JobDefList)
+            {
+                counter1++;
+                var parameters = new Dictionary<string, object>()
+                {
+                    {"L1",item["Jd_L1"] },
+                    {"L2",item["Jd_L2"] },
+                    {"L3",item["Jd_L3"] },
+                    {"L4",item["Jd_L4"] },
+                    {"JobCode",item["Jd_JobCode"] }
+                };
+                var jobDefInVessel = SqlManager.ExecuteQuery("select Jd_L1,Jd_L2,Jd_L3,Jd_L4 ,Jd_JobCode,Jd_RuntimeSourceCode from Job_Definition  WHERE Jd_CallSign = '9SWT' " +
+                                                                                                        "AND Jd_L1 = @L1 " +
+                                                                                                        "AND Jd_L2 = @L2 " +
+                                                                                                        "AND Jd_L3 = @L3 " +
+                                                                                                        "AND Jd_L4 = @L4 " +
+                                                                                                        "AND Jd_JobCode = @JobCode", parameters: parameters, connection: target.Connection).FirstOrDefault();
+                if(jobDefInVessel != null && jobDefInVessel["Jd_RuntimeSourceCode"] != null && !item["Jd_RuntimeSourceCode"].ToString().Equals(jobDefInVessel["Jd_RuntimeSourceCode"].ToString()))
+                {
+                    var updateQuery = "update Job_Definition set Jd_RuntimeSourceCode = @sourceCode  WHERE Jd_CallSign = '9SWT' " +
+                                                                                                            "AND Jd_L1 = @L1 " +
+                                                                                                            "AND Jd_L2 = @L2 " +
+                                                                                                            "AND Jd_L3 = @L3 " +
+                                                                                                            "AND Jd_L4 = @L4 " +
+                                                                                                            "AND Jd_JobCode = @JobCode";
+                    var parameters1 = new Dictionary<string, object>()
+                    {
+                        {"L1",item["Jd_L1"] },
+                        {"L2",item["Jd_L2"] },
+                        {"L3",item["Jd_L3"] },
+                        {"L4",item["Jd_L4"] },
+                        {"JobCode",item["Jd_JobCode"] },
+                        {"sourceCode",item["Jd_RuntimeSourceCode"] }
+                    };
+                    SqlManager.ExecuteNonQuery(sql: updateQuery, parameters: parameters1, connection: target.Connection);
+
+                    str += $"Job Def {item["Jd_L1"]}-{item["Jd_L2"]}-{item["Jd_L3"]}-{item["Jd_L4"]}-{item["Jd_JobCode"]} \n";
+                    str += $"Before = {jobDefInVessel["Jd_RuntimeSourceCode"]} After = {item["Jd_RuntimeSourceCode"]}\n\n";
+
+
+                }
+              
+
             }
         }
 
