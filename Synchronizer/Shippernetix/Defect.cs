@@ -156,8 +156,8 @@ namespace Synchronizer.Shippernetix
                     var updateTargetDefectSql = "update Defects set Dai_UnitDesc=@Desc where Dai_CallSign=@CallSign and Dai_DamageNo=@DamageNo";
 
 
-                    SqlManager.DisableTrigger("DEFECT_UPD", "Defects", target.Connection);
-                    SqlManager.DisableTrigger("DEFECT_UPT_CC", "Defects", target.Connection);
+                    //SqlManager.DisableTrigger("DEFECT_UPD", "Defects", target.Connection);
+                    //SqlManager.DisableTrigger("DEFECT_UPT_CC", "Defects", target.Connection);
 
                     var ar2 = SqlManager.ExecuteNonQuery(updateTargetDefectSql, new Dictionary<string, object>()
                     {
@@ -167,8 +167,8 @@ namespace Synchronizer.Shippernetix
                     }, target.Connection);
 
 
-                    SqlManager.EnableTrigger("DEFECT_UPD", "Defects", target.Connection);
-                    SqlManager.EnableTrigger("DEFECT_UPT_CC", "Defects", target.Connection);
+                    //SqlManager.EnableTrigger("DEFECT_UPD", "Defects", target.Connection);
+                    //SqlManager.EnableTrigger("DEFECT_UPT_CC", "Defects", target.Connection);
 
                     try
                     {
@@ -209,11 +209,11 @@ namespace Synchronizer.Shippernetix
                     target.Connection,
                     target.PrepareForVesselSide);
 
-                SqlManager.DisableTrigger("DEFECT_INS", "Defects", source.Connection);
+                //SqlManager.DisableTrigger("DEFECT_INS", "Defects", source.Connection);
 
                 var affectedRowsCount = SqlManager.ExecuteNonQuery(sql: defect.Table.GetInsertQueries, parameters: null, source.Connection);
 
-                SqlManager.EnableTrigger("DEFECT_INS", "Defects", source.Connection);
+                //SqlManager.EnableTrigger("DEFECT_INS", "Defects", source.Connection);
 
                 if (affectedRowsCount > 0)
                     logMessages.Add(messageAction(string.Format("{0} Transfered From {0} To {1}", defectToProcess.ShippernetixId, source.Name, target.Name)));
@@ -232,13 +232,13 @@ namespace Synchronizer.Shippernetix
                                     source.Connection,
                                     source.PrepareForVesselSide);
 
-                SqlManager.DisableTrigger("DEFECT_INS", "Defects", target.Connection);
-                SqlManager.DisableTrigger("DEFECT_INS_CC", "Defects", target.Connection);
+                //SqlManager.DisableTrigger("DEFECT_INS", "Defects", target.Connection);
+                //SqlManager.DisableTrigger("DEFECT_INS_CC", "Defects", target.Connection);
 
                 var affectedRowsCount = SqlManager.ExecuteNonQuery(sql: defect.Table.GetInsertQueries, parameters: null, target.Connection);
 
-                SqlManager.EnableTrigger("DEFECT_INS", "Defects", target.Connection);
-                SqlManager.EnableTrigger("DEFECT_INS_CC", "Defects", target.Connection);
+                //SqlManager.EnableTrigger("DEFECT_INS", "Defects", target.Connection);
+                //SqlManager.EnableTrigger("DEFECT_INS_CC", "Defects", target.Connection);
 
                 if (affectedRowsCount > 0)
                     logMessages.Add(messageAction(string.Format("{0} Transfered From {0} To {1}", defectToProcess.ShippernetixId, source.Name, source.Name)));
@@ -280,13 +280,13 @@ namespace Synchronizer.Shippernetix
                                                         source.Connection,
                                                         source.PrepareForVesselSide);
 
-                    SqlManager.DisableTrigger("DEFECT_UPD", "Defects", target.Connection);
-                    SqlManager.DisableTrigger("DEFECT_UPT_CC", "Defects", target.Connection);
+                    //SqlManager.DisableTrigger("DEFECT_UPD", "Defects", target.Connection);
+                    //SqlManager.DisableTrigger("DEFECT_UPT_CC", "Defects", target.Connection);
 
                     var affectedRowsCount = SqlManager.ExecuteNonQuery(sql: defect.Table.GetUpdateQueries, parameters: null, target.Connection);
 
-                    SqlManager.EnableTrigger("DEFECT_UPD", "Defects", target.Connection);
-                    SqlManager.EnableTrigger("DEFECT_UPT_CC", "Defects", target.Connection);
+                    //SqlManager.EnableTrigger("DEFECT_UPD", "Defects", target.Connection);
+                    //SqlManager.EnableTrigger("DEFECT_UPT_CC", "Defects", target.Connection);
 
                     if (affectedRowsCount > 0)
                         logMessages.Add(messageAction(string.Format("{0} Transfered From {1} To {2}", sourceDifference.ShippernetixId, source.Name, target.Name)));
