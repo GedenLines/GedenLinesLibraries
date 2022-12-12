@@ -24,6 +24,8 @@ namespace Synchronizer.Shippernetix
 
         public string ConnectionString { get; set; }
 
+        public string Email { get; set; }
+
         public Vessel_Master() { }
 
         public Vessel_Master(string callSign)
@@ -48,7 +50,8 @@ namespace Synchronizer.Shippernetix
                                             {
                                                 CallSign = r.CallSign,
                                                 Name = r.Name,
-                                                ConnectionString = CustomConnection.ConnectionStringPool.FirstOrDefault(s => s.Key == r.CallSign).Value
+                                                ConnectionString = CustomConnection.ConnectionStringPool.FirstOrDefault(s => s.Key == r.CallSign).Value,
+                                                Email = r.Email
                                             }).ToList();
         }
     }

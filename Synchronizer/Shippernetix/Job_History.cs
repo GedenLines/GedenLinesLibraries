@@ -232,6 +232,7 @@ namespace Synchronizer.Shippernetix
 
             taskList.ForEach(t=>t.Start());
             Task.WaitAll(taskList.ToArray());
+            taskList.Clear();
 
             if (!onlyMail)
                 if (lastSourceRecords.Any())
@@ -314,7 +315,6 @@ namespace Synchronizer.Shippernetix
                         });
                         taskList.Add(new Task(action));
                     }
-
                 }
 
             taskList.ForEach(t => t.Start());

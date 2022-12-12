@@ -5,6 +5,7 @@ using SqlManagement;
 using Synchronizer.Shippernetix;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Net.Mail;
 using System.Threading;
@@ -48,6 +49,22 @@ namespace Synchronizer
         }
 
 
+        //public static void SendMailForOverDataPackage(Vessel_Master vessel)
+        //{
+        //    var mailMessage = $"To Master of {vessel.Name.Trim()} \n" +
+        //                        "Good Day \n\n" +
+        //                        "Pls kindly note that we saw your system has missing data file, could you pls apply all missing data file in your system.\n\n" +
+        //                        "Best Regards \n" +
+        //                        "IT Department \n";
+
+        //    new MailManager(o => o.Code == "GedenErp")
+        //        .Prepare(new Mail(new MailAddress("bt@gedenlines.com"), null, "IT / Shippernetix Data Package",mailMessage)
+        //        .AddTo(new MailAddress("rea@gedenlines.com")).
+        //        AddCC(new MailAddress("bkopdag@gedenlines.com")));
+
+        //}
+
+
         public static void Main(string[] args)
         {
             Initialize();
@@ -56,7 +73,7 @@ namespace Synchronizer
 
             Console.WriteLine();
 
-            
+           
 
             Automat aoutTrigger = new Automat("Trigger Checked", "Trigger Checked");
             var regTrigger = new AutomatJob("Trigger Checked")
@@ -69,9 +86,11 @@ namespace Synchronizer
                 });
 
             aoutTrigger.AddJob(regTrigger);
-
-
-            //Defect.FixFromVesselToOffice("9REF", "Def-1151");
+            //UnHiddenAllDefect("9HNK");
+            //Job_History.FixFromVesselToOffice("9REF", "13", "1", "4", "1", "A", "502");
+            //fixJobRuntime_Source();
+            //Defect.FixFromOfficeToVessel("9PRT", "Def-393");
+            //Job_History.ReCalculateLastJob()
 
 
             Console.Write("For Synchronizer enter 1 \nFor Manuel DataPackage Mailer enter 2 \nFor Run Automat DataPackage Mailer Enter 3 \n");
@@ -492,6 +511,8 @@ namespace Synchronizer
 
                 "</tr></thead>" +
                 "<tbody>";
+
+            List<Vessel_Master> Mailed_Vessels = new List<Vessel_Master>();
             var source = new Side("Office", "MsSqlConnectionString", true);
             foreach (var vessel in vessels)
             {
@@ -546,13 +567,20 @@ namespace Synchronizer
                 mailMessage += $"<td style='border: 1px solid; padding: 5px; '>{dpSendVesselnum - dpReciveOfficenum}</td>";
 
                 mailMessage += "</tr>";
-
+                
+                //if(dpReciveVesselnum != 0 && (dpSendOfficenum - dpReciveVesselnum) > 5)
+                //{
+                //    Mailed_Vessels.Add(vessel);
+                //    SendMailForOverDataPackage(vessel);
+                //}
 
             }
             mailMessage += "</tbody>" +
                 "</table>";
 
             SendMailForDataPackage(mailMessage);
+
+
         }
         static void Initialize()
         {
@@ -773,6 +801,7 @@ namespace Synchronizer
             var counter1 = 0;
             var JobDefList = SqlManager.ExecuteQuery(sql: "select * from Job_Definition WHERE Jd_CallSign = '9SWT' AND Jd_IntType = 'COUNTER'", parameters: null, connection: source.Connection);
             var str = "";
+            var counter = 0;
 
             foreach (var item in JobDefList)
             {
@@ -793,23 +822,23 @@ namespace Synchronizer
                                                                                                         "AND Jd_JobCode = @JobCode", parameters: parameters, connection: target.Connection).FirstOrDefault();
                 if(jobDefInVessel != null && jobDefInVessel["Jd_RuntimeSourceCode"] != null && !item["Jd_RuntimeSourceCode"].ToString().Equals(jobDefInVessel["Jd_RuntimeSourceCode"].ToString()))
                 {
-                    var updateQuery = "update Job_Definition set Jd_RuntimeSourceCode = @sourceCode  WHERE Jd_CallSign = '9SWT' " +
-                                                                                                            "AND Jd_L1 = @L1 " +
-                                                                                                            "AND Jd_L2 = @L2 " +
-                                                                                                            "AND Jd_L3 = @L3 " +
-                                                                                                            "AND Jd_L4 = @L4 " +
-                                                                                                            "AND Jd_JobCode = @JobCode";
-                    var parameters1 = new Dictionary<string, object>()
-                    {
-                        {"L1",item["Jd_L1"] },
-                        {"L2",item["Jd_L2"] },
-                        {"L3",item["Jd_L3"] },
-                        {"L4",item["Jd_L4"] },
-                        {"JobCode",item["Jd_JobCode"] },
-                        {"sourceCode",item["Jd_RuntimeSourceCode"] }
-                    };
-                    SqlManager.ExecuteNonQuery(sql: updateQuery, parameters: parameters1, connection: target.Connection);
-
+                    //var updateQuery = "update Job_Definition set Jd_RuntimeSourceCode = @sourceCode  WHERE Jd_CallSign = '9SWT' " +
+                    //                                                                                        "AND Jd_L1 = @L1 " +
+                    //                                                                                        "AND Jd_L2 = @L2 " +
+                    //                                                                                        "AND Jd_L3 = @L3 " +
+                    //                                                                                        "AND Jd_L4 = @L4 " +
+                    //                                                                                        "AND Jd_JobCode = @JobCode";
+                    //var parameters1 = new Dictionary<string, object>()
+                    //{
+                    //    {"L1",item["Jd_L1"] },
+                    //    {"L2",item["Jd_L2"] },
+                    //    {"L3",item["Jd_L3"] },
+                    //    {"L4",item["Jd_L4"] },
+                    //    {"JobCode",item["Jd_JobCode"] },
+                    //    {"sourceCode",item["Jd_RuntimeSourceCode"] }
+                    //};
+                    //SqlManager.ExecuteNonQuery(sql: updateQuery, parameters: parameters1, connection: target.Connection);
+                    counter++;
                     str += $"Job Def {item["Jd_L1"]}-{item["Jd_L2"]}-{item["Jd_L3"]}-{item["Jd_L4"]}-{item["Jd_JobCode"]} \n";
                     str += $"Before = {jobDefInVessel["Jd_RuntimeSourceCode"]} After = {item["Jd_RuntimeSourceCode"]}\n\n";
 
@@ -819,6 +848,22 @@ namespace Synchronizer
 
             }
         }
+
+        //public static void UnHiddenAllDefect(string CallSign)
+        //{
+        //    var target = new Side("", CallSign, true);
+        //    //var vessel = new Vessel_Master("9HNK");
+        //    var paramatere = new Dictionary<string, object>() { { "CallSing", "9HNK" } };
+        //    var HiddenDefectList = SqlManager.ExecuteQuery("SELECT Dai_CallSign,Dai_DamageNo,Dai_Status,Hidden FROM Defects WHERE Dai_CallSign = @CallSing AND Hidden = 1", paramatere ,target.Connection);            
+        //    foreach (var item in HiddenDefectList)
+        //    {
+        //        var query = "UPDATE Defects SET Hidden = 0 WHERE Dai_CallSign = @CallSign AND Dai_DamageNo = @DamageNo";
+        //        var exequer = SqlManager.ExecuteNonQuery(sql: query, new Dictionary<string, object>() { { "CallSign", item["Dai_CallSign"] }, { "DamageNo", item["Dai_DamageNo"] } },target.Connection);
+        //    }
+
+
+        //    var a = 1;
+        //}
 
         public static int ExecuteNonQueryOn(MsSqlConnection msSqlConnection, string sql, Dictionary<string, object> parameters = null)
         {
