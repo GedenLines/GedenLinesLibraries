@@ -29,9 +29,12 @@ namespace CsvReaderToMigrate
             if (!SqlManager.CheckConnection(connection))
                 throw new Exception("Db Connection Problem Occured");
 
-            //var structures = GetStructuresByVessel("9ALV", "ALL", "ALL", "ALL", "ALL", connection);
-            //CloneStructureTo(structures, "9ALF", connection, true);
+            //var structures = GetStructuresByVessel("9VCT", "ALL", "ALL", "ALL", "ALL", connection);
+            //CloneStructureTo(structures, "9VTL", connection, true);
 
+
+
+            var a = 1;
             //var structures = GetStructuresByVessel("9HM2", "16", "ALL", "ALL","ALL", connection);
             //CloneStructureTo(structures, "9ANT", connection,true);
 
@@ -223,8 +226,8 @@ namespace CsvReaderToMigrate
                     var l4 = trimAction(columns[4]);
                     var code = trimAction(columns[5]);
 
-                    var structures = GetStructuresByVessel(callSign, l1, l2, l3, l4, connection);
-                    CloneStructureTo(structures, newVesselCallSign, connection, true);
+                    //var structures = GetStructuresByVessel(callSign, l1, l2, l3, l4, connection);
+                    //CloneStructureTo(structures, newVesselCallSign, connection, true);
 
                     //for (int i = 1; i < 5; i++)
                     //{

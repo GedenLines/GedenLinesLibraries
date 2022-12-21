@@ -118,6 +118,11 @@ namespace Synchronizer
             //Defect.FixFromOfficeToVessel("9PRT", "Def-393");
             //Job_History.ReCalculateLastJob()
 
+            //Job_History.ReCalculateLastJob(connection:new MsSqlConnection("MsSqlConnectionString"),callSign: "9PTY",l1: "5",l2: "4",l3: "1",l4: "2",jobCode: "A",actionToWorkWithLastCompletedJob: null);
+            //Job_History.ReCalculateLastJob(connection: new MsSqlConnection("MsSqlConnectionString"), callSign: "9PTY", l1: "5", l2: "4", l3: "1", l4: "2", jobCode: "B", actionToWorkWithLastCompletedJob: null);
+
+            //var a = 1;
+
 
             Console.Write("For Synchronizer enter 1 \nFor Manuel DataPackage Mailer enter 2 \nFor Run Automat DataPackage Mailer Enter 3 \n");
             var status = int.Parse(Console.ReadLine());
@@ -706,11 +711,11 @@ namespace Synchronizer
                     },
                     {
                         "9VCT",config.GetConnectionString("9VCT")
+                    },
+                    {
+                        "9VTL",
+                        "Data Source=172.22.23.60; Initial Catalog = GENEL; User Id = sa; Password = '';"
                     }
-                    //{
-                    //    "9VCT",
-                    //    "Data Source=172.22.23.58; Initial Catalog = GENEL; User Id = sa; Password = '';"
-                    //}
                 };
             });
 
