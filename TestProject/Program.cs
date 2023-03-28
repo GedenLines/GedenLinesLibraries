@@ -8,6 +8,7 @@ namespace TestProject
     {
         static void Main(string[] args)
         {
+            //test
             //"@SIB6U9pHeG!"
             new MailManager("mail.gedenlines.com",25, "gedenerp",null,null,false)
                 .Prepare(new Mail(new MailAddress("gedenerp@gedenlines.com"), null, "Subject", "<b>Body</b>")
