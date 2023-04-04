@@ -29,12 +29,12 @@ namespace CsvReaderToMigrate
             if (!SqlManager.CheckConnection(connection))
                 throw new Exception("Db Connection Problem Occured");
 
-            //var structures = GetStructuresByVessel("9VCT", "ALL", "ALL", "ALL", "ALL", connection);
-            //CloneStructureTo(structures, "9VTL", connection, true);
+            //var structures = GetStructuresByVessel("9HNK", "ALL", "ALL", "ALL", "ALL", connection);
+            //CloneStructureTo(structures, "9SGR", connection, true);
 
 
 
-            var a = 1;
+            //var a = 1;
             //var structures = GetStructuresByVessel("9HM2", "16", "ALL", "ALL","ALL", connection);
             //CloneStructureTo(structures, "9ANT", connection,true);
 
@@ -189,8 +189,8 @@ namespace CsvReaderToMigrate
                 //    });
                 //}
 
-                var structures2 = GetStructuresByVessel("9VRD", "ALL", "ALL", "ALL", "ALL", connection);
-                CloneStructureTo(structures2, "9VCT", connection, true);
+                //var structures2 = GetStructuresByVessel("9VRD", "ALL", "ALL", "ALL", "ALL", connection);
+                //CloneStructureTo(structures2, "9VCT", connection, true);
 
 
                 var newVesselCallSign = "9VRD";
@@ -582,8 +582,9 @@ namespace CsvReaderToMigrate
             parameters.Add("L2", structure.En_L2);
             parameters.Add("L3", structure.En_L3);
             parameters.Add("L4", structure.En_L4);
+            parameters.Add("jobType", "PLM");
 
-            var results = SqlManager.ExecuteQuery("select * from Job_Definition where Jd_CallSign=@CallSign and Jd_L1=@L1 and Jd_L2=@L2 and Jd_L3=@L3 and Jd_L4=@L4", parameters, connection)
+            var results = SqlManager.ExecuteQuery("select * from Job_Definition where Jd_CallSign=@CallSign and Jd_L1=@L1 and Jd_L2=@L2 and Jd_L3=@L3 and Jd_L4=@L4 and Jd_JobType=@jobType", parameters, connection)
                 .Select(r=>new JobDefinition() 
                 {
                     Jd_CallSign = r["Jd_CallSign"].ToString(),

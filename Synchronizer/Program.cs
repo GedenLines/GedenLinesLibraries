@@ -16,6 +16,7 @@ namespace Synchronizer
 {
     public class Program
     {
+        private static object LockObject = new object();
         enum SyncAction
         {
             AllOfThem,
@@ -77,13 +78,15 @@ namespace Synchronizer
 
             //var source2 = new Side("Office", "MsSqlConnectionString", true);
 
-            //var target2 = new Side("LIFE", "9ALF", true);
+            //var target2 = new Side("ANGEL", "9ANT", true);
 
             //var overdueResults = SqlManager.ExecuteQuery(sql: sqlQuery, connection: target2.Connection);
 
 
-            //Job_History.FixFromVesselToOffice(callSign:"9ALF",l1:"1",l2:"4",l3:"5",l4:"1",jobCode:"A",jobNumber:"1");
+            //Job_History.FixFromOfficeToVessel(callSign: "9HM2", l1: "8", l2: "1", l3: "1", l4: "10", jobCode: "A", jobNumber: "20");
+            //Job_History.FixFromOfficeToVessel(callSign: "9HM2", l1: "8", l2: "1", l3: "1", l4: "11", jobCode: "A", jobNumber: "20");
 
+            //var a = 1;
             //foreach (var result in overdueResults)
             //{
             //    Job_History.FixFromOfficeToVessel(callSign: result["CallSign"].ToString(),
@@ -99,7 +102,7 @@ namespace Synchronizer
 
             Console.WriteLine();
 
-           
+            //Job_History.FixFromOfficeToVessel(callSign:"9HNK",l1:"19",l2:"1",l3:"1",l4:"1",jobCode:"A",jobNumber:"41");
 
             Automat aoutTrigger = new Automat("Trigger Checked", "Trigger Checked");
             var regTrigger = new AutomatJob("Trigger Checked")
@@ -113,15 +116,29 @@ namespace Synchronizer
 
             aoutTrigger.AddJob(regTrigger);
             //UnHiddenAllDefect("9HNK");
-            //Job_History.FixFromVesselToOffice("9REF", "13", "1", "4", "1", "A", "502");
+            //TransferCompConsumable();
+            //Fix2NextJob();
+
+            //Job_History.FixFromVesselToOffice("9HM2", "13", "1", "9", "3", "A", "40");
+            ////Job_History.
+            //var a = 1;
+
+
+            //var assa = new Side("Office", "MsSqlConnectionString", true);
+            ////Job_History.ReCalculateLastJob(connection: (MsSqlConnection)assa.Connection, "9VSN", l1: "12", l2: "2", l3: "1", l4: "22", jobCode: "A",actionToWorkWithLastCompletedJob:null);
+            //Job_History.ReCalculateLastJob(connection: (MsSqlConnection)assa.Connection, "9VCT", l1: "5", l2: "8", l3: "2", l4: "1", jobCode: "A",actionToWorkWithLastCompletedJob:null);
+            //Job_History.ReCalculateLastJob(connection: (MsSqlConnection)assa.Connection, "9BRV", l1: "5", l2: "8", l3: "2", l4: "1", jobCode: "A",actionToWorkWithLastCompletedJob:null);
+            //Job_History.ReCalculateLastJob(connection: (MsSqlConnection)assa.Connection, "9BRV", l1: "5", l2: "8", l3: "2", l4: "2", jobCode: "A",actionToWorkWithLastCompletedJob:null);
+            //Job_History.ReCalculateLastJob(connection: (MsSqlConnection)assa.Connection, "9BRV", l1: "5", l2: "8", l3: "2", l4: "3", jobCode: "A",actionToWorkWithLastCompletedJob:null);
+            //Job_History.ReCalculateLastJob(connection: (MsSqlConnection)assa.Connection, "9HA2", l1: "1", l2: "1", l3: "3", l4: "1", jobCode: "B",actionToWorkWithLastCompletedJob:null);
+
+            //Job_History.ReCalculateLastJob(connection: (MsSqlConnection)assa.Connection, "9REF", l1: "17", l2: "1", l3: "1", l4: "19", jobCode: "A", actionToWorkWithLastCompletedJob: null);
+            
+
+
+            //var a = 1;k
             //fixJobRuntime_Source();
             //Defect.FixFromOfficeToVessel("9PRT", "Def-393");
-            //Job_History.ReCalculateLastJob()
-
-            //Job_History.ReCalculateLastJob(connection:new MsSqlConnection("MsSqlConnectionString"),callSign: "9PTY",l1: "5",l2: "4",l3: "1",l4: "2",jobCode: "A",actionToWorkWithLastCompletedJob: null);
-            //Job_History.ReCalculateLastJob(connection: new MsSqlConnection("MsSqlConnectionString"), callSign: "9PTY", l1: "5", l2: "4", l3: "1", l4: "2", jobCode: "B", actionToWorkWithLastCompletedJob: null);
-
-            //var a = 1;
 
 
             Console.Write("For Synchronizer enter 1 \nFor Manuel DataPackage Mailer enter 2 \nFor Run Automat DataPackage Mailer Enter 3 \n");
@@ -450,8 +467,8 @@ namespace Synchronizer
                             {
                                 case SyncAction.AllOfThem:
                                     Structure.Sync(source, target, vessel, onlyMail);
-                                    Job_Definition.Sync(source, target, vessel, onlyMail);
                                     Defect.Sync(source, target, vessel, onlyMail);
+                                    Job_Definition.Sync(source, target, vessel, onlyMail);
                                     Job_History.Sync(source, target, vessel, onlyMail);
                                     break;
                                 case SyncAction.Structure:
@@ -468,8 +485,8 @@ namespace Synchronizer
                                     break;
                                 default:
                                     Structure.Sync(source, target, vessel, onlyMail);
-                                    Job_Definition.Sync(source, target, vessel, onlyMail);
                                     Defect.Sync(source, target, vessel, onlyMail);
+                                    Job_Definition.Sync(source, target, vessel, onlyMail);
                                     Job_History.Sync(source, target, vessel, onlyMail);
                                     break;
                             }
@@ -523,7 +540,7 @@ namespace Synchronizer
 
         public static void DataPackageNumbersMatch()
         {
-            var vessels = Vessel_Master.Vessels;
+            var vessels = Vessel_Master.Vessels.OrderBy(x=>x.Name);
             string mailMessage = $"<p>Date = {DateTime.Now}</p>" +
                 "<p>Data Package Transfers Last Numbers  Between The Vessel And The Office</p>" +
                 "<table style = 'border: 1px solid;'>" +
@@ -713,8 +730,13 @@ namespace Synchronizer
                         "9VCT",config.GetConnectionString("9VCT")
                     },
                     {
-                        "9VTL",
-                        "Data Source=172.22.23.60; Initial Catalog = GENEL; User Id = sa; Password = '';"
+                        "9VTL",config.GetConnectionString("9VTL")
+                    },
+                    {
+                        "9VSN",config.GetConnectionString("9VSN")
+                    },
+                    {
+                        "9SGR","Data Source=172.22.23.68; Initial Catalog=GENEL; User Id=sa; Password='';Application Name=SUGAR"
                     }
                 };
             });
@@ -791,6 +813,187 @@ namespace Synchronizer
             }
         }
 
+        public static void TransferCompConsumable()
+        {
+            
+            try
+            {
+                object a = null;
+                var source = new Side("Office", "MsSqlConnectionString", true);
+
+                var target = new Side("1 - M/T ADVANTAGE SWEET", "9SWT", true);
+                var list1 = SqlManager.ExecuteQuery(connection: source.Connection, sql: "select TOP(10000) * from Comp_Consumables_Temp WHERE Cc_Callsign = '9SWT' AND IsTransfered = 0");
+                //var list2 = SqlManager.ExecuteQuery(connection: source.Connection, sql: "select * from  Comp_Consumables WHERE Cc_Callsign = '9SWT' AND Cc_Category <> 1 ");
+
+
+                var taskList = new List<Task>();
+
+                taskList.AddRange(list1.Select(item=>new Task(()=> 
+                {
+                    lock (LockObject)
+                    {
+                        var insertQuery = "insert into Comp_Consumables (Cc_Callsign, Cc_Category, Cc_Item, Cc_Desc, Cc_Unit, Cc_Curr, Cc_Price, Cc_Notes, Cc_CompCode, Cc_MinQty, Cc_AvgQty, Cc_MaxQty,Active,Send) " +
+                           "values (@CallSign, @Category, @Item, @Desc, @Unit, @Curr, @Price, @Notes, @CompCode, @MinQty, @AvgQty, @MaxQty,@Active,@Send)";
+                        var parameters = new Dictionary<string, object>()
+                        {
+                            {"CallSign",item["Cc_Callsign"] },
+                            {"Category",item["Cc_Category"] },
+                            {"Item",item["Cc_Item"] },
+                            {"Desc",item["Cc_Desc"] },
+                            {"Unit",item["Cc_Unit"] },
+                            {"Curr",item["Cc_Curr"] },
+                            {"Price",item["Cc_Price"] },
+                            {"Notes",item["Cc_Notes"] },
+                            {"CompCode",item["Cc_CompCode"] },
+                            {"MinQty",item["Cc_MinQty"] },
+                            {"AvgQty",item["Cc_AvgQty"] },
+                            {"MaxQty",item["Cc_MaxQty"] },
+                            {"Active",item["Active"] },
+                            {"Send",item["Send"] }
+                        };
+
+                        var affactedRow = SqlManager.ExecuteNonQuery(connection: target.Connection, sql: insertQuery, parameters: parameters);
+                        if (affactedRow > 0)
+                        {
+                            Console.WriteLine($"Consumable Added {item["Cc_Callsign"] + "-" + item["Cc_Category"] + "-" + item["Cc_Item"]}");
+                            var updateQuery = "update Comp_Consumables_Temp set IsTransfered = 1 WHERE Cc_Callsign = @callsign AND Cc_Category = @category AND Cc_Item = @item";
+                            var updatePArams = new Dictionary<string, object>()
+                            {
+                                {"callsign",item["Cc_Callsign"] },
+                                {"category",item["Cc_Category"] },
+                                {"item",item["Cc_Item"] }
+                            };
+
+                            var updatedRow = SqlManager.ExecuteNonQuery(sql: updateQuery, parameters: updatePArams, connection: source.Connection);
+                            if (updatedRow > 0)
+                            {
+                                Console.WriteLine($"Updated Temp {item["Cc_Callsign"] + "-" + item["Cc_Category"] + "-" + item["Cc_Item"]}");
+                            }
+                            else
+                            {
+
+                            }
+                        }
+                        else
+                        {
+
+                        }
+                    }
+                })));
+
+
+                var size = 20;
+                var totalPage = Convert.ToInt32(Math.Ceiling((double)((double)taskList.Count / (double)size)));
+
+
+                var taskObjects = new List<TaskObject>();
+
+                for (int page = 0; page < totalPage; page++)
+                {
+                    var skip = size * page;
+
+                    var tasksToDo = taskList.Skip(skip).Take(size).ToList();
+
+                    for (int k = 0; k < tasksToDo.Count(); k++)
+                    {
+                        taskObjects.Add(new TaskObject(tasksToDo[k], page, k));
+                    }
+                }
+
+                var toGroups = taskObjects.GroupBy(to => to.Page);
+
+                foreach (var toGroup in toGroups)
+                {
+                    if (toGroups.Any(g => g.Key == toGroup.Key + 1))
+                    {
+                        var list = toGroup.ToList();
+
+                        for (int i = 0; i < list.Count(); i++)
+                        {
+                            var upperPageList = toGroups.Where(g => g.Key == toGroup.Key + 1).FirstOrDefault().ToList();
+
+                            if (i < upperPageList.Count)
+                            {
+                                var upo = upperPageList[i];
+
+                                list[i].Task.ContinueWith(t =>
+                                {
+                                    Console.WriteLine("ContinueWith(Page : {0},Index : {1}) ", upo.Page, upo.Index);
+
+                                    if (upo.Task.Status != TaskStatus.RanToCompletion)
+                                        upo.Task.Start();
+                                });
+                            }
+                        }
+                    }
+                }
+
+                taskObjects.Where(to => to.Page == 0 && to.Task.Status != TaskStatus.RanToCompletion).ToList().ForEach(to => to.Task.Start());
+
+                Task.WaitAll(taskList.ToArray());
+
+
+                //Parallel.ForEach(list1, item =>
+                //{
+                //    lock (LockObject)
+                //    {
+                //        var insertQuery = "insert into Comp_Consumables (Cc_Callsign, Cc_Category, Cc_Item, Cc_Desc, Cc_Unit, Cc_Curr, Cc_Price, Cc_Notes, Cc_CompCode, Cc_MinQty, Cc_AvgQty, Cc_MaxQty,Active,Send) " +
+                //       "values (@CallSign, @Category, @Item, @Desc, @Unit, @Curr, @Price, @Notes, @CompCode, @MinQty, @AvgQty, @MaxQty,@Active,@Send)";
+                //        var parameters = new Dictionary<string, object>()
+                //        {
+                //            {"CallSign",item["Cc_Callsign"] },
+                //            {"Category",item["Cc_Category"] },
+                //            {"Item",item["Cc_Item"] },
+                //            {"Desc",item["Cc_Desc"] },
+                //            {"Unit",item["Cc_Unit"] },
+                //            {"Curr",item["Cc_Curr"] },
+                //            {"Price",item["Cc_Price"] },
+                //            {"Notes",item["Cc_Notes"] },
+                //            {"CompCode",item["Cc_CompCode"] },
+                //            {"MinQty",item["Cc_MinQty"] },
+                //            {"AvgQty",item["Cc_AvgQty"] },
+                //            {"MaxQty",item["Cc_MaxQty"] },
+                //            {"Active",item["Active"] },
+                //            {"Send",item["Send"] }
+                //        };
+
+                //        var affactedRow = SqlManager.ExecuteNonQuery(connection: target.Connection, sql: insertQuery, parameters: parameters);
+                //        if (affactedRow > 0)
+                //        {
+                //            Console.WriteLine($"Consumable Added {item["Cc_Callsign"] + "-" + item["Cc_Category"] + "-" + item["Cc_Item"]}");
+                //            var updateQuery = "update Comp_Consumables_Temp set IsTransfered = 1 WHERE Cc_Callsign = @callsign AND Cc_Category = @category AND Cc_Item = @item";
+                //            var updatePArams = new Dictionary<string, object>()
+                //            {
+                //                {"callsign",item["Cc_Callsign"] },
+                //                {"category",item["Cc_Category"] },
+                //                {"item",item["Cc_Item"] }
+                //            };
+
+                //            var updatedRow = SqlManager.ExecuteNonQuery(sql: updateQuery, parameters: updatePArams, connection: source.Connection);
+                //            if (updatedRow > 0)
+                //            {
+                //                Console.WriteLine($"Updated Temp {item["Cc_Callsign"] + "-" + item["Cc_Category"] + "-" + item["Cc_Item"]}");
+                //            }
+                //            else
+                //            {
+
+                //            }
+                //        }
+                //        else
+                //        {
+
+                //        }
+                //    }
+                //});
+            }
+            catch (Exception exc)
+            {
+
+                throw exc;
+            }
+          
+        }
+
         public static void FixPospenedJobs()
         {
             var source = new Side("Office", "MsSqlConnectionString", true);
@@ -823,6 +1026,53 @@ namespace Synchronizer
 
         }
 
+
+        public static void Fix2NextJob()
+        {
+            var source = new Side("Office", "MsSqlConnectionString", true);
+
+            var target = new Side("1 - M/T ADVANTAGE SOLAR", "9HM2", true);
+
+            var list = SqlManager.ExecuteQuery(connection: target.Connection, sql: "select u.*,u.IdWithoutJobNo + '-'+ CONVERT(varchar,u.maxJobNumber) as toDelete from ( select wie.Id, wie.IdWithoutJobNo, wie.JobNo, max(JobNo) over(PARTITION BY CallSign, L1, L2, L3, L4, JobCode) maxJobNumber, wie.Status from ViewToGetVesselJobs wie INNER JOIN(select IdWithoutJobNo, Status, COUNT(0) as c from ViewToGetVesselJobs WHERE CallSign = '9HM2' AND JobType = 'PLM' AND Status = 'NEXT JOB' GROUP BY IdWithoutJobNo, Status HAVING COUNT(0) > 1)  y ON wie.IdWithoutJobNo = y.IdWithoutJobNo) u where u.JobNo = u.maxJobNumber - 1");
+
+            foreach (var item in list)
+            {
+                var toDeleteArr = item["toDelete"].ToString().Split("-");
+                var toDeleteObj = new
+                {
+                    CallSign = "9HM2",
+                    L1 = toDeleteArr[0].ToString(),
+                    L2 = toDeleteArr[1].ToString(),
+                    L3 = toDeleteArr[2].ToString(),
+                    L4 = toDeleteArr[3].ToString(),
+                    JobCode = toDeleteArr[4].ToString(),
+                    JobNo = toDeleteArr[5].ToString()
+                };
+                var deleteQuery = "delete from Job_History WHERE Je_CallSign = @CallSign AND Je_L1 = @L1 AND Je_L2 = @L2 AND Je_L3 = @L3 AND Je_L4 = @L4 AND Je_JobCode = @JobCode AND Je_JobNo = @JobNo";
+                var parameters = new Dictionary<string, object>()
+                {
+                    { "CallSign",toDeleteObj.CallSign },
+                    { "L1",toDeleteObj.L1 },
+                    { "L2",toDeleteObj.L2 },
+                    { "L3",toDeleteObj.L3 },
+                    { "L4",toDeleteObj.L4 },
+                    { "JobCode",toDeleteObj.JobCode },
+                    { "JobNo",toDeleteObj.JobNo }
+                };
+                var affectedRow = SqlManager.ExecuteNonQuery(connection: target.Connection, sql: deleteQuery, parameters: parameters);
+                var affectedRowSource = SqlManager.ExecuteNonQuery(connection: source.Connection, sql: deleteQuery, parameters: parameters);
+
+                Console.WriteLine($"Deleed Job {item["toDelete"].ToString()}");
+
+                Job_History.FixFromVesselToOffice(callSign: toDeleteObj.CallSign,
+                                                  l1: toDeleteObj.L1,
+                                                  l2: toDeleteObj.L2,
+                                                  l3: toDeleteObj.L3,
+                                                  l4: toDeleteObj.L4,
+                                                  jobCode: toDeleteObj.JobCode,
+                                                  jobNumber: item["JobNo"].ToString());
+            }
+        }
 
         public static void fixJobRuntime_Source()
         {
