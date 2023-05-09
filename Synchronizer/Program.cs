@@ -78,8 +78,40 @@ namespace Synchronizer
 
             //var source2 = new Side("Office", "MsSqlConnectionString", true);
 
-            //var target2 = new Side("ANGEL", "9ANT", true);
+            //var target2 = new Side("DECK", "TEST", true);
+            ////var query = "select * from ViewToGetVesselJobs WHERE IsOverdue = 1 AND Status = 'NEXT JOB' AND CallSign = '9ALF' AND IntType <> 'COUNTER'";
+            ////var overdueList = SqlManager.ExecuteQuery(sql: query, connection: target2.Connection);
+            //foreach (var vessel in Vessel_Master.Vessels)
+            //{
+            //    var query = "select * from ViewToGetVesselJobs WHERE IsOverdue = 1 AND Status = 'NEXT JOB' AND CallSign = @OfCallSing AND IntType <> 'COUNTER'";
+            //    var overdueList = SqlManager.ExecuteQuery(sql: query, connection: target2.Connection, parameters: new Dictionary<string, object>() { { "OfCallSing", vessel.CallSign } });
 
+            //    foreach (var overdueJob in overdueList)
+            //    {
+            //        var updateQuery = "update Job_Definition set Jd_PlanDate = @planDate " +
+            //            "WHERE Jd_CallSign = @Callsign " +
+            //            "AND Jd_L1 = @L1 " +
+            //            "AND Jd_L2 = @L2 " +
+            //            "AND Jd_L3 = @L3 " +
+            //            "AND Jd_L4 = @L4 " +
+            //            "AND Jd_JobCode = @JobCode";
+            //        var parameter = new Dictionary<string, object>()
+            //        {
+            //            {"Callsign",overdueJob["CallSign"] },
+            //            {"L1", overdueJob["L1"] },
+            //            {"L2", overdueJob["L2"] },
+            //            {"L3", overdueJob["L3"] },
+            //            {"L4", overdueJob["L4"]},
+            //            {"JobCode", overdueJob["JobCode"] },
+            //            {"planDate", new DateTime(2023,04,17) }
+            //        };
+
+            //        var updated = SqlManager.ExecuteNonQuery(sql: updateQuery, connection: target2.Connection, parameters: parameter);
+            //    }
+            //}
+
+
+            //var a = 1;
             //var overdueResults = SqlManager.ExecuteQuery(sql: sqlQuery, connection: target2.Connection);
 
 
@@ -133,7 +165,7 @@ namespace Synchronizer
             //Job_History.ReCalculateLastJob(connection: (MsSqlConnection)assa.Connection, "9HA2", l1: "1", l2: "1", l3: "3", l4: "1", jobCode: "B",actionToWorkWithLastCompletedJob:null);
 
             //Job_History.ReCalculateLastJob(connection: (MsSqlConnection)assa.Connection, "9REF", l1: "17", l2: "1", l3: "1", l4: "19", jobCode: "A", actionToWorkWithLastCompletedJob: null);
-            
+
 
 
             //var a = 1;k
@@ -230,7 +262,7 @@ namespace Synchronizer
                                         {"CallSign",vessel.CallSign }
                                     }, connection: target.Connection);
 
-                        
+
                             Console.WriteLine("Fixing : From target to source");
 
                             var queryToFix = "  select z.* from(select y.*," +
@@ -509,14 +541,14 @@ namespace Synchronizer
             }
             else if (status == 3)
             {
-                
-                Automat aout = new Automat("Package","Package");
+
+                Automat aout = new Automat("Package", "Package");
                 var reg = new AutomatJob("Package")
-                    .SetInterval(hours:1)
+                    .SetInterval(hours: 1)
                     .SetContinuous(true)
-                    .SetAction((j) => 
+                    .SetAction((j) =>
                     {
-                        if(DateTime.Now.Hour == 8)
+                        if (DateTime.Now.Hour == 8)
                         {
                             DataPackageNumbersMatch();
                         }
@@ -535,12 +567,12 @@ namespace Synchronizer
             }
 
             Console.ReadLine();
-        
+
         }
 
         public static void DataPackageNumbersMatch()
         {
-            var vessels = Vessel_Master.Vessels.OrderBy(x=>x.Name);
+            var vessels = Vessel_Master.Vessels.OrderBy(x => x.Name);
             string mailMessage = $"<p>Date = {DateTime.Now}</p>" +
                 "<p>Data Package Transfers Last Numbers  Between The Vessel And The Office</p>" +
                 "<table style = 'border: 1px solid;'>" +
@@ -577,9 +609,9 @@ namespace Synchronizer
                     var dpReciveOffice = SqlManager.ExecuteQuery(sql: $"select MAX(Dr_PacketNo) AS Dr_PacketNo from Data_Receive WHERE Dr_PrepareOwnerCode = '{vessel.CallSign}' ", connection: source.Connection);
                     var dpSendOffice = SqlManager.ExecuteQuery(sql: $"select MAX(Ds_PacketNo) AS Ds_PacketNo from Data_Send WHERE Ds_ReceiveOwnerCode = '{vessel.CallSign}' ", connection: source.Connection);
 
-                    dpReciveVesselnum = dpReciveVessel != null && dpReciveVessel.Count() > 0 &&  dpReciveVessel.FirstOrDefault()["Dr_PacketNo"] != null  ? int.Parse(dpReciveVessel.FirstOrDefault()["Dr_PacketNo"].ToString()) : 0;
+                    dpReciveVesselnum = dpReciveVessel != null && dpReciveVessel.Count() > 0 && dpReciveVessel.FirstOrDefault()["Dr_PacketNo"] != null ? int.Parse(dpReciveVessel.FirstOrDefault()["Dr_PacketNo"].ToString()) : 0;
                     dpSendVesselnum = dpSendVessel != null && dpSendVessel.Count() > 0 && dpSendVessel.FirstOrDefault()["Ds_PacketNo"] != null ? int.Parse(dpSendVessel.FirstOrDefault()["Ds_PacketNo"].ToString()) : 0;
-                    dpReciveOfficenum = dpReciveOffice != null && dpReciveOffice.Count() > 0 && dpReciveOffice.FirstOrDefault()["Dr_PacketNo"] != null  ? int.Parse(dpReciveOffice.FirstOrDefault()["Dr_PacketNo"].ToString()) : 0;
+                    dpReciveOfficenum = dpReciveOffice != null && dpReciveOffice.Count() > 0 && dpReciveOffice.FirstOrDefault()["Dr_PacketNo"] != null ? int.Parse(dpReciveOffice.FirstOrDefault()["Dr_PacketNo"].ToString()) : 0;
                     dpSendOfficenum = dpSendOffice != null && dpSendOffice.Count() > 0 && dpSendOffice.FirstOrDefault()["Ds_PacketNo"] != null ? int.Parse(dpSendOffice.FirstOrDefault()["Ds_PacketNo"].ToString()) : 0;
                 }
                 else
@@ -615,7 +647,7 @@ namespace Synchronizer
                 mailMessage += $"<td style='border: 1px solid; padding: 5px; '>{dpSendVesselnum - dpReciveOfficenum}</td>";
 
                 mailMessage += "</tr>";
-                
+
                 //if(dpReciveVesselnum != 0 && (dpSendOfficenum - dpReciveVesselnum) > 5)
                 //{
                 //    Mailed_Vessels.Add(vessel);
@@ -736,8 +768,11 @@ namespace Synchronizer
                         "9VSN",config.GetConnectionString("9VSN")
                     },
                     {
-                        "9SGR","Data Source=172.22.23.68; Initial Catalog=GENEL; User Id=sa; Password='';Application Name=SUGAR"
+                        "TEST","Data Source=172.22.23.69; Initial Catalog=GENEL; User Id=sa; Password='';Application Name=DECK"
                     }
+                    //{
+                    //    "9SGR","Data Source=172.22.23.68; Initial Catalog=GENEL; User Id=sa; Password='';Application Name=SUGAR"
+                    //}
                 };
             });
 
@@ -769,7 +804,7 @@ namespace Synchronizer
         public static void TriggerEnableDisableController()
         {
             var vessels = Vessel_Master.Vessels;
-          
+
             string mailMessage = $"<p>Date = {DateTime.Now}</p>";
 
             foreach (var vessel in vessels)
@@ -797,7 +832,7 @@ namespace Synchronizer
                         mailMessage += $"{string.Join(',', results.Select(r => r.Name))}Trigger is Disabled";
 
                         new MailManager(o => o.Code == "GedenErp")
-                                   .Prepare(new Mail(from : new MailAddress("shippernetix@gedenlines.com"),to: null,subject: "Disabled Triggers Controller",body:mailMessage)
+                                   .Prepare(new Mail(from: new MailAddress("shippernetix@gedenlines.com"), to: null, subject: "Disabled Triggers Controller", body: mailMessage)
                                    //.AddTo(new MailAddress("bt@gedenlines.com")))
                                    .AddTo(new MailAddress("karar@gedenlines.com")))
                                    .Send((ex) =>
@@ -815,7 +850,7 @@ namespace Synchronizer
 
         public static void TransferCompConsumable()
         {
-            
+
             try
             {
                 object a = null;
@@ -828,14 +863,14 @@ namespace Synchronizer
 
                 var taskList = new List<Task>();
 
-                taskList.AddRange(list1.Select(item=>new Task(()=> 
-                {
-                    lock (LockObject)
-                    {
-                        var insertQuery = "insert into Comp_Consumables (Cc_Callsign, Cc_Category, Cc_Item, Cc_Desc, Cc_Unit, Cc_Curr, Cc_Price, Cc_Notes, Cc_CompCode, Cc_MinQty, Cc_AvgQty, Cc_MaxQty,Active,Send) " +
-                           "values (@CallSign, @Category, @Item, @Desc, @Unit, @Curr, @Price, @Notes, @CompCode, @MinQty, @AvgQty, @MaxQty,@Active,@Send)";
-                        var parameters = new Dictionary<string, object>()
-                        {
+                taskList.AddRange(list1.Select(item => new Task(() =>
+                  {
+                      lock (LockObject)
+                      {
+                          var insertQuery = "insert into Comp_Consumables (Cc_Callsign, Cc_Category, Cc_Item, Cc_Desc, Cc_Unit, Cc_Curr, Cc_Price, Cc_Notes, Cc_CompCode, Cc_MinQty, Cc_AvgQty, Cc_MaxQty,Active,Send) " +
+                             "values (@CallSign, @Category, @Item, @Desc, @Unit, @Curr, @Price, @Notes, @CompCode, @MinQty, @AvgQty, @MaxQty,@Active,@Send)";
+                          var parameters = new Dictionary<string, object>()
+                          {
                             {"CallSign",item["Cc_Callsign"] },
                             {"Category",item["Cc_Category"] },
                             {"Item",item["Cc_Item"] },
@@ -850,36 +885,36 @@ namespace Synchronizer
                             {"MaxQty",item["Cc_MaxQty"] },
                             {"Active",item["Active"] },
                             {"Send",item["Send"] }
-                        };
+                          };
 
-                        var affactedRow = SqlManager.ExecuteNonQuery(connection: target.Connection, sql: insertQuery, parameters: parameters);
-                        if (affactedRow > 0)
-                        {
-                            Console.WriteLine($"Consumable Added {item["Cc_Callsign"] + "-" + item["Cc_Category"] + "-" + item["Cc_Item"]}");
-                            var updateQuery = "update Comp_Consumables_Temp set IsTransfered = 1 WHERE Cc_Callsign = @callsign AND Cc_Category = @category AND Cc_Item = @item";
-                            var updatePArams = new Dictionary<string, object>()
-                            {
+                          var affactedRow = SqlManager.ExecuteNonQuery(connection: target.Connection, sql: insertQuery, parameters: parameters);
+                          if (affactedRow > 0)
+                          {
+                              Console.WriteLine($"Consumable Added {item["Cc_Callsign"] + "-" + item["Cc_Category"] + "-" + item["Cc_Item"]}");
+                              var updateQuery = "update Comp_Consumables_Temp set IsTransfered = 1 WHERE Cc_Callsign = @callsign AND Cc_Category = @category AND Cc_Item = @item";
+                              var updatePArams = new Dictionary<string, object>()
+                              {
                                 {"callsign",item["Cc_Callsign"] },
                                 {"category",item["Cc_Category"] },
                                 {"item",item["Cc_Item"] }
-                            };
+                              };
 
-                            var updatedRow = SqlManager.ExecuteNonQuery(sql: updateQuery, parameters: updatePArams, connection: source.Connection);
-                            if (updatedRow > 0)
-                            {
-                                Console.WriteLine($"Updated Temp {item["Cc_Callsign"] + "-" + item["Cc_Category"] + "-" + item["Cc_Item"]}");
-                            }
-                            else
-                            {
+                              var updatedRow = SqlManager.ExecuteNonQuery(sql: updateQuery, parameters: updatePArams, connection: source.Connection);
+                              if (updatedRow > 0)
+                              {
+                                  Console.WriteLine($"Updated Temp {item["Cc_Callsign"] + "-" + item["Cc_Category"] + "-" + item["Cc_Item"]}");
+                              }
+                              else
+                              {
 
-                            }
-                        }
-                        else
-                        {
+                              }
+                          }
+                          else
+                          {
 
-                        }
-                    }
-                })));
+                          }
+                      }
+                  })));
 
 
                 var size = 20;
@@ -991,7 +1026,7 @@ namespace Synchronizer
 
                 throw exc;
             }
-          
+
         }
 
         public static void FixPospenedJobs()
@@ -999,7 +1034,7 @@ namespace Synchronizer
             var source = new Side("Office", "MsSqlConnectionString", true);
 
             var target = new Side("4 - M/T ADVANTAGE VALUE", "9VLE", true);
-            
+
 
             var jobs = SqlManager.ExecuteQuery(sql: "select v.CallSign,v.VesselName,v.FullIdWithCallSign,v.IdWithoutJobNo,v.Status,v.IntType,v.Interval,v.IsOverdue,p.AddedDate as PostponeDate,p.[OldValue],p.[NewValue] " +
                 "from ViewToGetVesselJobs v " +
@@ -1101,7 +1136,7 @@ namespace Synchronizer
                                                                                                         "AND Jd_L3 = @L3 " +
                                                                                                         "AND Jd_L4 = @L4 " +
                                                                                                         "AND Jd_JobCode = @JobCode", parameters: parameters, connection: target.Connection).FirstOrDefault();
-                if(jobDefInVessel != null && jobDefInVessel["Jd_RuntimeSourceCode"] != null && !item["Jd_RuntimeSourceCode"].ToString().Equals(jobDefInVessel["Jd_RuntimeSourceCode"].ToString()))
+                if (jobDefInVessel != null && jobDefInVessel["Jd_RuntimeSourceCode"] != null && !item["Jd_RuntimeSourceCode"].ToString().Equals(jobDefInVessel["Jd_RuntimeSourceCode"].ToString()))
                 {
                     //var updateQuery = "update Job_Definition set Jd_RuntimeSourceCode = @sourceCode  WHERE Jd_CallSign = '9SWT' " +
                     //                                                                                        "AND Jd_L1 = @L1 " +
@@ -1125,7 +1160,7 @@ namespace Synchronizer
 
 
                 }
-              
+
 
             }
         }
