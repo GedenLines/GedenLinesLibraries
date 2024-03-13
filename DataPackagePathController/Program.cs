@@ -255,8 +255,8 @@ namespace DataPackagePathController
 
                 var vessel = Vessel.FetchAll().FirstOrDefault(v => v.CallSign == directory);
 
-                if (vessel.CallSign == "9SWT")
-                    continue;
+                //if (vessel.CallSign == "9SWT")
+                //    continue;
 
                 var newPathToRead = CustomFile.CombinePaths(cDiskPath, directory);
 
