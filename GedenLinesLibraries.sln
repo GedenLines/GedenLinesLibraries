@@ -25,7 +25,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ExchangeMailToFile", "Excha
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataPackagePathController", "DataPackagePathController\DataPackagePathController.csproj", "{65CCC714-4029-4156-884A-381BA720F8D0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SparepartOnShippernetix", "SparepartOnShippernetix\SparepartOnShippernetix.csproj", "{A2E10213-7620-419A-95BB-7D00D4562469}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SparepartOnShippernetix", "SparepartOnShippernetix\SparepartOnShippernetix.csproj", "{A2E10213-7620-419A-95BB-7D00D4562469}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataPackageSearch", "DataPackageSearch\DataPackageSearch.csproj", "{9EE41808-0F38-4DEA-AA8B-DB4296A7BDFF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -81,6 +83,10 @@ Global
 		{A2E10213-7620-419A-95BB-7D00D4562469}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A2E10213-7620-419A-95BB-7D00D4562469}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A2E10213-7620-419A-95BB-7D00D4562469}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9EE41808-0F38-4DEA-AA8B-DB4296A7BDFF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9EE41808-0F38-4DEA-AA8B-DB4296A7BDFF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9EE41808-0F38-4DEA-AA8B-DB4296A7BDFF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9EE41808-0F38-4DEA-AA8B-DB4296A7BDFF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

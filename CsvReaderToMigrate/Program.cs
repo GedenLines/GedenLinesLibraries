@@ -29,19 +29,19 @@ namespace CsvReaderToMigrate
             if (!SqlManager.CheckConnection(connection))
                 throw new Exception("Db Connection Problem Occured");
 
-            //var structures = GetStructuresByVessel("9HNK", "ALL", "ALL", "ALL", "ALL", connection);
-            //CloneStructureTo(structures, "9SGR", connection, true);
+            //var structures = GetStructuresByVessel("9SMT", "ALL", "ALL", "ALL", "ALL", connection);
+            //CloneStructureTo(structures, "9SLO", connection, true);
 
 
 
-            //var a = 1;
+            var a = 1;
             //var structures = GetStructuresByVessel("9HM2", "16", "ALL", "ALL","ALL", connection);
             //CloneStructureTo(structures, "9ANT", connection,true);
 
             //structures = GetStructuresByVessel("9VRT", "5", "3", "2", "ALL", connection);
             //CloneStructureTo(structures, "9ANT", connection,true);
 
-            //structures = GetStructuresByVessel("9HA4", "2", "1", "ALL", null, connection);
+            //var structures = GetStructuresByVessel("9HM2", "9", "5", "ALL", "ALL", connection);
             //CloneStructureTo(structures, "9ANT", connection, true);
             //structures = GetStructuresByVessel("9HA4", "2", "2", "ALL", null, connection);
             //CloneStructureTo(structures, "9ANT", connection, true);
@@ -49,9 +49,10 @@ namespace CsvReaderToMigrate
             //CloneStructureTo(structures, "9ANT", connection, true);
             //structures = GetStructuresByVessel("9HA4", "2", "4", "ALL", null, connection);
             //CloneStructureTo(structures, "9ANT", connection, true);
-            //structures = GetStructuresByVessel("9HA4", "2", "5", "ALL", null, connection);
-            //CloneStructureTo(structures, "9ANT", connection, true);
-
+            //var structures = GetStructuresByVessel("9REF", "16", "1", "4", "ALL", connection);
+            //CloneStructureTo(structures, "9VTY", connection, true);
+            //structures = GetStructuresByVessel("9REF", "16", "1", "5", "ALL", connection);
+            //CloneStructureTo(structures, "9VTY", connection, true);
             try
             {
 
@@ -193,13 +194,13 @@ namespace CsvReaderToMigrate
                 //CloneStructureTo(structures2, "9VCT", connection, true);
 
 
-                var newVesselCallSign = "9VRD";
+                var newVesselCallSign = "9PTH";
 
-                var vesselCallSignToReplace = "9PWR";
+                //var vesselCallSignToReplace = "9SMT";
 
                 //var path = CustomFile.CombinePaths(CustomFile.CurrentUserDesktopPath, "ANTONIS.csv");
                 //VLCCDF.csv
-                var path = CustomFile.CombinePaths(CustomFile.CurrentUserDesktopPath, "VLCCDF.csv");
+                var path = CustomFile.CombinePaths(CustomFile.CurrentUserDesktopPath, "pathStructure.csv");
 
                 var file = new Dsv(path: path);
 
@@ -738,7 +739,7 @@ namespace CsvReaderToMigrate
                 foreach (var column in row.Columns)
                 {
                     if (column.Name == "Jd_PlanRuntime")
-                        column.Value = 0;
+                        column.Value = 10;
                     else if (column.Name == "Jd_PlanDate")
                         column.Value = DateTime.Now;
                 }

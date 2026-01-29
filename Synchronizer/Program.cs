@@ -72,52 +72,24 @@ namespace Synchronizer
 
             AutomatService.Start();
 
+            //SparePartRobUpdate();
 
             //var sqlQuery = "select j.* from ViewToGetVesselJobs j where j.Status = 'NEXT JOB' and j.IsOverdue = 1 and CallSign = '9ALF'";
 
-
+            //OverdueCloseForCounter();
             //var source2 = new Side("Office", "MsSqlConnectionString", true);
 
             //var target2 = new Side("DECK", "TEST", true);
-            ////var query = "select * from ViewToGetVesselJobs WHERE IsOverdue = 1 AND Status = 'NEXT JOB' AND CallSign = '9ALF' AND IntType <> 'COUNTER'";
-            ////var overdueList = SqlManager.ExecuteQuery(sql: query, connection: target2.Connection);
-            //foreach (var vessel in Vessel_Master.Vessels)
-            //{
-            //    var query = "select * from ViewToGetVesselJobs WHERE IsOverdue = 1 AND Status = 'NEXT JOB' AND CallSign = @OfCallSing AND IntType <> 'COUNTER'";
-            //    var overdueList = SqlManager.ExecuteQuery(sql: query, connection: target2.Connection, parameters: new Dictionary<string, object>() { { "OfCallSing", vessel.CallSign } });
-
-            //    foreach (var overdueJob in overdueList)
-            //    {
-            //        var updateQuery = "update Job_Definition set Jd_PlanDate = @planDate " +
-            //            "WHERE Jd_CallSign = @Callsign " +
-            //            "AND Jd_L1 = @L1 " +
-            //            "AND Jd_L2 = @L2 " +
-            //            "AND Jd_L3 = @L3 " +
-            //            "AND Jd_L4 = @L4 " +
-            //            "AND Jd_JobCode = @JobCode";
-            //        var parameter = new Dictionary<string, object>()
-            //        {
-            //            {"Callsign",overdueJob["CallSign"] },
-            //            {"L1", overdueJob["L1"] },
-            //            {"L2", overdueJob["L2"] },
-            //            {"L3", overdueJob["L3"] },
-            //            {"L4", overdueJob["L4"]},
-            //            {"JobCode", overdueJob["JobCode"] },
-            //            {"planDate", new DateTime(2023,04,17) }
-            //        };
-
-            //        var updated = SqlManager.ExecuteNonQuery(sql: updateQuery, connection: target2.Connection, parameters: parameter);
-            //    }
-            //}
-
-
+            //////var query = "select * from ViewToGetVesselJobs WHERE IsOverdue = 1 AND Status = 'NEXT JOB' AND CallSign = '9ALF' AND IntType <> 'COUNTER'";
+            //////var overdueList = SqlManager.ExecuteQuery(sql: query, connection: target2.Connection);
             //var a = 1;
             //var overdueResults = SqlManager.ExecuteQuery(sql: sqlQuery, connection: target2.Connection);
-
+            //Defect.FixFromOfficeToVessel("9VRD", "Def-334");
+            //Defect.FixFromOfficeToVessel("9VRD", "Def-336");
 
             //Job_History.FixFromOfficeToVessel(callSign: "9HM2", l1: "8", l2: "1", l3: "1", l4: "10", jobCode: "A", jobNumber: "20");
             //Job_History.FixFromOfficeToVessel(callSign: "9HM2", l1: "8", l2: "1", l3: "1", l4: "11", jobCode: "A", jobNumber: "20");
-
+            //Job_History.FixFromVesselToOffice(callSign: "9VTL", l1: "13", l2: "1", l3: "4", l4: "1", jobCode: "A", jobNumber: "2");
             //var a = 1;
             //foreach (var result in overdueResults)
             //{
@@ -132,26 +104,27 @@ namespace Synchronizer
 
 
 
-            Console.WriteLine();
-
             //Job_History.FixFromOfficeToVessel(callSign:"9HNK",l1:"19",l2:"1",l3:"1",l4:"1",jobCode:"A",jobNumber:"41");
 
-            Automat aoutTrigger = new Automat("Trigger Checked", "Trigger Checked");
-            var regTrigger = new AutomatJob("Trigger Checked")
-                .SetInterval(minutes: 30)
-                //.SetInterval(seconds:5)
-                .SetContinuous(true)
-                .SetAction((j) =>
-                {
-                    TriggerEnableDisableController();
-                });
 
-            aoutTrigger.AddJob(regTrigger);
+            //Automat aoutTrigger = new Automat("Trigger Checked", "Trigger Checked");
+            //var regTrigger = new AutomatJob("Trigger Checked")
+            //    .SetInterval(minutes: 30)
+            //    //.SetInterval(seconds:5)
+            //    .SetContinuous(true)
+            //    .SetAction((j) =>
+            //    {
+            //        TriggerEnableDisableController();
+            //    });
+
+            //aoutTrigger.AddJob(regTrigger);
             //UnHiddenAllDefect("9HNK");
             //TransferCompConsumable();
             //Fix2NextJob();
-
-            //Job_History.FixFromVesselToOffice("9HM2", "13", "1", "9", "3", "A", "40");
+            
+            //Job_History.FixFromOfficeToVessel("9VLU", "13", "1", "12", "6", "A", "189");
+            //Job_History.FixFromOfficeToVessel("9RYL", "13", "1", "12", "5", "Def-1394", "1");
+            //Job_History.FixFromOfficeToVessel("9RYL", "8", "1", "1", "12", "A", "20");
             ////Job_History.
             //var a = 1;
 
@@ -165,13 +138,16 @@ namespace Synchronizer
             //Job_History.ReCalculateLastJob(connection: (MsSqlConnection)assa.Connection, "9HA2", l1: "1", l2: "1", l3: "3", l4: "1", jobCode: "B",actionToWorkWithLastCompletedJob:null);
 
             //Job_History.ReCalculateLastJob(connection: (MsSqlConnection)assa.Connection, "9REF", l1: "17", l2: "1", l3: "1", l4: "19", jobCode: "A", actionToWorkWithLastCompletedJob: null);
-
+            //Defect.FixFromOfficeToVessel("9PDV", "Def-37");
+            //Defect.FixFromOfficeToVessel("9PDV", "Def-38");
 
 
             //var a = 1;k
             //fixJobRuntime_Source();
-            //Defect.FixFromOfficeToVessel("9PRT", "Def-393");
+            //Defect.FixFromOfficeToVessel("9PTC", "Dam-1134");
 
+            //Job_History.FixFromOfficeToVessel("9HLN", "13", "1", "28", "1", "A", "4");
+            //Job_History.FixFromOfficeToVessel("9HLN", "13", "1", "28", "1", "A", "5");
 
             Console.Write("For Synchronizer enter 1 \nFor Manuel DataPackage Mailer enter 2 \nFor Run Automat DataPackage Mailer Enter 3 \n");
             var status = int.Parse(Console.ReadLine());
@@ -570,6 +546,130 @@ namespace Synchronizer
 
         }
 
+        /// <summary>
+        /// Denetimlerde test db sinde overdue olan işlerin overdue dan çıkarılması Counterli işler için.
+        /// </summary>
+        public static void OverdueCloseForCounter()
+        {
+            var target2 = new Side("DECK", "TEST", true);
+            foreach (var vessel in Vessel_Master.Vessels)
+            {
+                var query = "select * from ViewToGetVesselJobs WHERE IsOverdue = 1 AND Status = 'NEXT JOB' AND CallSign = @OfCallSing AND IntType = 'COUNTER'";
+                var overdueList = SqlManager.ExecuteQuery(sql: query, connection: target2.Connection, parameters: new Dictionary<string, object>() { { "OfCallSing", vessel.CallSign } });
+                //var query12 = "select * from Vessel_Master WHERE CallSign = '9VTL'";
+                //var v2 = SqlManager.ExecuteQuery(sql: query12, connection: target2.Connection);
+
+                var a = 1;
+                Console.WriteLine($" VESSEL NAME = {vessel.Name} \n");
+                foreach (var overdueJob in overdueList)
+                {
+                    var updateQuery = "update Job_Definition set Jd_PlanRuntime = @runtime " +
+                        "WHERE Jd_CallSign = @Callsign " +
+                        "AND Jd_L1 = @L1 " +
+                        "AND Jd_L2 = @L2 " +
+                        "AND Jd_L3 = @L3 " +
+                        "AND Jd_L4 = @L4 " +
+                        "AND Jd_JobCode = @JobCode";
+                    var parameter = new Dictionary<string, object>()
+                    {
+                        {"Callsign",overdueJob["CallSign"] },
+                        {"L1", overdueJob["L1"] },
+                        {"L2", overdueJob["L2"] },
+                        {"L3", overdueJob["L3"] },
+                        {"L4", overdueJob["L4"]},
+                        {"JobCode", overdueJob["JobCode"] },
+                        {"runtime", (Convert.ToInt32(overdueJob["LastRuntime"]) + 1000) }
+                    };
+
+                    var updated = SqlManager.ExecuteNonQuery(sql: updateQuery, connection: target2.Connection, parameters: parameter);
+                }
+            }
+
+        }
+
+
+        /// <summary>
+        /// Denetimlerde test db sinde overdue olan işlerin overdue dan çıkarılması Tarihli işler için.
+        /// </summary>
+        public static void OverdueCloseForNotCounter()
+        {
+            var target2 = new Side("DECK", "TEST", true);
+            //var vessel2 = Vessel_Master.Vessels.Select(x => x.CallSign == "9ANT");
+            var query12 = "select * from Vessel_Master WHERE CallSign = '9SMT'";
+            var v2 = SqlManager.ExecuteQuery(sql: query12, connection: target2.Connection);
+            foreach (var vessel in Vessel_Master.Vessels)
+            {
+                var query = "select * from ViewToGetVesselJobs WHERE Status = 'NEXT JOB'  AND IntType <> 'COUNTER' AND RangeDate < getdate() + 10 AND CallSign = @OfCallSing";
+                var overdueList = SqlManager.ExecuteQuery(sql: query, connection: target2.Connection, parameters: new Dictionary<string, object>() { { "OfCallSing", vessel.CallSign } });
+                var a = 1;
+                Console.WriteLine($" VESSEL NAME = {vessel.Name} \n");
+                foreach (var overdueJob in overdueList)
+                {
+                    var updateQuery = "update Job_Definition set Jd_PlanDate = @planDate " +
+                        "WHERE Jd_CallSign = @Callsign " +
+                        "AND Jd_L1 = @L1 " +
+                        "AND Jd_L2 = @L2 " +
+                        "AND Jd_L3 = @L3 " +
+                        "AND Jd_L4 = @L4 " +
+                        "AND Jd_JobCode = @JobCode";
+                    var parameter = new Dictionary<string, object>()
+                    {
+                        {"Callsign",overdueJob["CallSign"] },
+                        {"L1", overdueJob["L1"] },
+                        {"L2", overdueJob["L2"] },
+                        {"L3", overdueJob["L3"] },
+                        {"L4", overdueJob["L4"]},
+                        {"JobCode", overdueJob["JobCode"] },
+                        {"planDate", DateTime.Now.AddDays(15) }
+                    };
+
+                    var updated = SqlManager.ExecuteNonQuery(sql: updateQuery, connection: target2.Connection, parameters: parameter);
+                }
+            }
+
+        }
+
+        public static void SparePartRobUpdate()
+        {
+            var query = "SELECT SPS.Ss_Group, SPS.Ss_Product, SPS.Ss_Item, VM.Name, SP.S_CallSign, SP.S_Category, SP.S_GRoup, SP.S_Product, SP.S_Item, SP.S_Desc, SP.S_SSerialNo, SP.S_Maker, SP.S_Type, SP.S_PlateNo, SP.S_Drawing, SP.S_Serial, SP.S_Box, SP.S_Critical, SP.S_MinQty, SP.S_Unit, SP.S_PartNo, Ss_Qty = CASE WHEN SUM(SPS.Ss_Qty) - SP.S_MinQty < 0 THEN ' ' + CAST( SUM(SPS.Ss_Qty) AS varchar(200) ) WHEN SUM(SPS.Ss_Qty) - SP.S_MinQty = 0 THEN '  ' + CAST( SUM(SPS.Ss_Qty) AS varchar(200) ) ELSE CAST( SUM(SPS.Ss_Qty) AS varchar(200) ) END FROM Spare_Stock SPS, Vessel_Master VM, SPARES SP WHERE VM.CallSign = SPS.Ss_CallSign AND SPS.Ss_GROUP = SP.S_GROUP And SPS.Ss_PRODUCT = SP.S_PRODUCT And SPS.Ss_ITEM = SP.S_ITEM And SPS.Ss_CallSign = SP.S_CallSign And VM.Active = 1 GROUP BY Ss_Group, Ss_Product, Ss_Item, VM.Name, S_CallSign, S_Category, S_GRoup, S_Product, S_Item, S_Desc, S_SSerialNo, S_Maker, S_Type, S_PlateNo, S_Drawing, S_Serial, S_Box, S_Critical, S_MinQty, S_Unit, S_PartNo, S_SSerialNo, Ss_CallSign HAVING ( ( SUM(SPS.Ss_Qty) < SP.S_MinQty ) )";
+            var target2 = new Side("DECK", "TEST", true);
+            var list = SqlManager.ExecuteQuery(sql: query, connection: target2.Connection);
+
+            foreach (var item in list)
+            {
+                
+                var maxMove = SqlManager.ExecuteQuery(sql: "select MAX(Ss_MoveNo) +1 as MAX from Spare_Stock WHERE Ss_CallSign = @callsign AND Ss_Category = @categ AND Ss_Group = @gruop AND Ss_Product = @prod AND Ss_Item = @item",
+                    connection: target2.Connection,
+                    parameters: new Dictionary<string, object>() { { "callsign", item["S_CallSign"] }, { "categ", item["S_Category"] }, { "gruop", item["S_GRoup"] }, { "prod", item["S_Product"] }, { "item", item["S_Item"] } }).FirstOrDefault()["MAX"];
+
+
+                var qty = Convert.ToInt32(item["Ss_Qty"].ToString());
+                var rob = qty < 0 ? (qty * -1) + (Convert.ToInt32(item["S_MinQty"].ToString()) + 1) : (Convert.ToInt32(item["S_MinQty"].ToString()) + 1);
+
+
+                var query1 = "insert into Spare_Stock (Ss_CallSign, Ss_MoveNo ,Ss_Date,Ss_Category , Ss_Group, Ss_Product, Ss_Item,Ss_Qty,Active,Send, Ss_Remark)" +
+                    "VALUES(@CallSign, @moveno, @date, @categ, @group, @prod, @item, @qty, @active, @send, @remark)";
+                var parameters = new Dictionary<string, object>()
+                {
+                    {"CallSign",item["S_CallSign"] },
+                    {"moveno",maxMove },
+                    {"date",DateTime.Now },
+                    {"categ",item["S_Category"] },
+                    {"group",item["S_GRoup"] },
+                    {"prod",item["S_Product"] },
+                    {"item",item["S_Item"] },
+                    {"qty",rob},
+                    {"active",1 },
+                    {"send",0 },
+                    {"remark","" }
+                };
+
+                var inserted = SqlManager.ExecuteNonQuery(sql: query1, connection: target2.Connection, parameters: parameters);
+
+
+            }
+
+        }
         public static void DataPackageNumbersMatch()
         {
             var vessels = Vessel_Master.Vessels.OrderBy(x => x.Name);
@@ -768,10 +868,61 @@ namespace Synchronizer
                         "9VSN",config.GetConnectionString("9VSN")
                     },
                     {
-                        "TEST","Data Source=172.22.23.69; Initial Catalog=GENEL; User Id=sa; Password='';Application Name=DECK"
-                    }
+                        "9SGR",config.GetConnectionString("9SGR")
+                    },
+                    {
+                        "9PDV",config.GetConnectionString("9PDV")
+                    },
+                    {
+                        "9PTC",config.GetConnectionString("9PTC")
+                    },
+                    {
+                        "9PTF",config.GetConnectionString("9PTF")
+                    },
+                    {
+                        "9PNR",config.GetConnectionString("9PNR")
+                    },
+                    {
+                        "9VTY",config.GetConnectionString("9VTY")
+                    },
+                    {
+                        "9EQX",config.GetConnectionString("9EQX")
+                    },
+                    {
+                        "9PDS",config.GetConnectionString("9PDS")
+                    },
+                    {
+                        "9NPO",config.GetConnectionString("9NPO")
+                    },
+                    {
+                        "9NTR",config.GetConnectionString("9NTR")
+                    },
+                    {
+                       "9SMT",config.GetConnectionString("9SMT")
+                    },
+                    {
+                       "9SLO",config.GetConnectionString("9SLO")
+                    },
+                    {
+                       "9SMR",config.GetConnectionString("9SMR")
+                    },
+                    {
+                       "9SRA",config.GetConnectionString("9SRA")
+                    },
+                    {
+                       "9SRN",config.GetConnectionString("9SRN")
+                    },
+                    {
+                       "9PSN",config.GetConnectionString("9PSN")
+                    },
+                    {
+                       "9PTH",config.GetConnectionString("9PTH")
+                    },
                     //{
-                    //    "9SGR","Data Source=172.22.23.68; Initial Catalog=GENEL; User Id=sa; Password='';Application Name=SUGAR"
+                    //    "TEST","Data Source=172.16.79.11; Initial Catalog=GENEL; User Id=sa; Password='';Application Name=DECK"
+                    //}
+                    //{
+                    //    "9PTH","Data Source=172.22.24.44; Initial Catalog=GENEL; User Id=sa; Password='';Application Name=PATH"
                     //}
                 };
             });
